@@ -1,0 +1,142 @@
+# Carpetas auxiliares agregadas al proyecto
+descargas/
+Descargas/
+bitacora/
+Bitacora/
+respaldo/
+Respaldo/
+entrada/
+salida/
+dumps/
+
+# Archivos auxiliares agregados al proyecto
+*.log
+*.zip
+*.qgz
+*.ini
+diseño.txt
+generar_dump.py
+
+# Archivos compilados / optimizados de Python
+__pycache__/
+.pytest_cache/
+*.py[cod]
+*$py.class
+
+# Extensiones en C
+*.so
+
+# Archivos de distribución / empaquetado
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+.prettierrc
+
+# Entornos virtuales
+.venv/
+venv/
+venv.bak/
+
+# Archivos generados por PyInstaller
+*.manifest
+*.spec
+
+# Logs de instalación
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Reportes de pruebas y cobertura
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+
+# Archivos de traducción
+*.mo
+*.pot
+
+# Archivos específicos de Django
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+# Archivos específicos de Flask
+instance/
+.webassets-cache
+
+# Archivos de Scrapy
+.scrapy
+
+# Documentación de Sphinx
+docs/_build/
+
+# PyBuilder
+target/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Configuración de IPython
+profile_default/
+ipython_config.py
+
+# Configuración de pyenv
+.python-version
+
+# Configuración de pipenv
+Pipfile.lock
+
+# Paquetes PEP 582
+__pypackages__/
+
+# Archivos de Celery
+celerybeat-schedule
+celerybeat.pid
+
+# Archivos de SageMath
+*.sage.py
+
+# Configuración de Spyder
+.spyderproject
+.spyproject
+
+# Configuración de Rope
+.ropeproject
+
+# Documentación de mkdocs
+/site
+
+# Caché de mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Configuración de Pyre
+.pyre/
+
+# Configuración de pytype
+.pytype/
+
+# Símbolos de depuración de Cython
+cython_debug/
