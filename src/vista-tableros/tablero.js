@@ -34,33 +34,79 @@ export class Tablero {
             elementoTitulo.textContent = this.config.titulo;
         }
 
-        // AJUSTE DE TIEMPOS: Dejamos pasar 50ms para garantizar que el nodoRaiz ya esté
-        // inyectado en el DOM real antes de instanciar mapas, gráficos o buscar elementos de la UI.
-        setTimeout(async () => {
+        this.esperarContenedorListo().then(async () => {
             this.inicializarSubComponentes();
             this.poblarComboboxDimensiones();
             await this.poblarComboboxTableros();
             this.vincularEventosUI();
             this.actualizarFlujoAnalitico(this.config.dimensionPrincipal.campo);
-
-            if (this.mapaCtrl) {
-                this.mapaCtrl.redimensionar();
-                if (this.config.visualizacion === 'mapaCalor') {
-                    this.mapaCtrl.actualizarCapas(
-                        this.datos,
-                        this.config,
-                        this.config.dimensionPrincipal.campo
-                    );
-                }
-            }
-        }, 50);
+        });
 
         return this.nodoRaiz;
+    }
+
+    esperarContenedorListo() {
+        return new Promise((resolve) => {
+            const ubicarContenedor = () =>
+                this.nodoRaiz
+                    ? this.nodoRaiz.querySelector('#mapa-leaflet')
+                    : null;
+
+            let resuelto = false;
+            const finalizar = () => {
+                if (resuelto) return;
+                resuelto = true;
+                if (observer) observer.disconnect();
+                resolve();
+            };
+
+            const contenedorInicial = ubicarContenedor();
+            if (
+                contenedorInicial &&
+                contenedorInicial.offsetWidth > 0 &&
+                contenedorInicial.offsetHeight > 0
+            ) {
+                finalizar();
+                return;
+            }
+
+            const observer = new ResizeObserver((entries) => {
+                for (const entry of entries) {
+                    if (
+                        entry.contentRect.width > 0 &&
+                        entry.contentRect.height > 0
+                    ) {
+                        finalizar();
+                        return;
+                    }
+                }
+            });
+
+            const esperarNodoEnDom = () => {
+                const nodo = ubicarContenedor();
+                if (nodo) {
+                    observer.observe(nodo);
+                } else if (!resuelto) {
+                    requestAnimationFrame(esperarNodoEnDom);
+                }
+            };
+            esperarNodoEnDom();
+
+            setTimeout(() => {
+                if (!resuelto) {
+                    console.warn(
+                        '[Tablero] El contenedor del mapa no reportó un tamaño válido a tiempo; se continúa de todas formas.'
+                    );
+                    finalizar();
+                }
+            }, 2000);
+        });
     }
 
     inicializarSubComponentes() {
         this.mapaCtrl = new ControladorMapa('mapa-leaflet');
         this.mapaCtrl.inicializar();
+        this.mapaCtrl.redimensionar();
 
         const idMapaBase = this.config.idMapaBase || null;
         const mapasBaseJson = this.orquestador.configuracionMapasBase;
@@ -83,7 +129,6 @@ export class Tablero {
         const cmb = this.nodoRaiz.querySelector('#cmb-tableros');
         if (!cmb) return;
 
-        // Si la caché ya existe, no hacemos fetch de nuevo.
         if (!this.tablerosHermanos || this.tablerosHermanos.length === 0) {
             try {
                 const respuesta = await fetch('./config/tableros.json');
@@ -130,7 +175,6 @@ export class Tablero {
     }
 
     vincularEventosUI() {
-        // Evento para cambiar dimensión analítica
         const cmb = this.nodoRaiz.querySelector('#cmb-dimensiones');
         if (cmb) {
             cmb.addEventListener('change', (e) =>
@@ -138,7 +182,6 @@ export class Tablero {
             );
         }
 
-        // Evento para cambiar de Tablero (Año / Variante de la Serie)
         const cmbTableros = this.nodoRaiz.querySelector('#cmb-tableros');
         if (cmbTableros) {
             cmbTableros.addEventListener('change', (e) => {
