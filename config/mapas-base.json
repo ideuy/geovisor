@@ -1,0 +1,126 @@
+{
+    "mapasBase": {
+        "configMapa": {
+        "centro": [-32.522, -55.766],
+        "zoomInicial": 7,
+        "zoomBuscador": 16,
+        "urlDefault": "https://mapas.ide.uy/geoserver-vectorial/gwc/service/wmts/rest/capa_base_ideuy_ideuy/default/EPSG:3857/EPSG:3857:{z}/{y}/{x}?format=image/png",
+        "opcionesDefault": { 
+            "maxZoom": 22, 
+            "maxNativeZoom": 18,
+            "attribution": "© IDE Uruguay", 
+            "tileSize": 256 
+        }
+        },
+        "proveedores": {
+            "ide_mapa_base": {
+            "nombre": "IDE Uruguay (Mapa Base)",
+            "activo": true,
+            "url": "https://mapas.ide.uy/geoserver-vectorial/gwc/service/wmts/rest/capa_base_ideuy_ideuy/default/EPSG:3857/EPSG:3857:{z}/{y}/{x}?format=image/png",
+            "opciones": { "maxZoom": 22, "maxNativeZoom": 18, "attribution": "© IDE Uruguay", "tileSize": 256}
+            },
+            "ide_nacional": {
+            "nombre": "IDE (Nacional 2017-2018)",
+            "activo": "false",
+            "url": "https://mapas.ide.uy/geoserver-raster/gwc/service/wmts?service=WMTS&request=GetTile&version=1.0.0&layer=ortofotos:ortofoto_nacional&style=raster&tilematrixset=EPSG:3857&format=image/png&height=256&width=256&tilematrix=EPSG:3857:{z}&tilerow={y}&tilecol={x}",
+            "opciones": { "maxZoom": 22, "maxNativeZoom": 18, "attribution": "© IDE Uruguay"}
+            },
+            "ide_nacional_urbano": {
+            "nombre": "IDE (Nacional Urbano 2017-2018)",
+            "activo": "false",            
+            "url": "https://mapas.ide.uy/geoserver-raster/gwc/service/wmts?service=WMTS&request=GetTile&version=1.0.0&layer=ortofotos:ORTOFOTOS_2019&style=raster&tilematrixset=EPSG:3857&format=image/jpeg&height=256&width=256&tilematrix=EPSG:3857:{z}&tilerow={y}&tilecol={x}",
+            "opciones": { "maxZoom": 22, "maxNativeZoom": 18, "attribution": "© IDE Uruguay"}
+            },
+            "ide_urbano": {
+            "nombre": "IDE (Urbano 2017-2018)",
+            "activo": "false",            
+            "url": "https://mapas.ide.uy/geoserver-raster/gwc/service/wmts?service=WMTS&request=GetTile&version=1.0.0&layer=ortofotos:ortofoto_urbana&style=raster&tilematrixset=EPSG:3857&format=image/png&height=256&width=256&tilematrix=EPSG:3857:{z}&tilerow={y}&tilecol={x}",
+            "opciones": { "maxZoom": 22, "maxNativeZoom": 18, "attribution": "© IDE Uruguay"}
+            },
+            "ide_mdt_nacional": {
+            "nombre": "IDE (MDT Nacional)",
+            "activo": "false",            
+            "url": "https://mapas.ide.uy/geoserver-raster/gwc/service/wmts?service=WMTS&request=GetTile&version=1.0.0&layer=relieve:mdt_nacional&style=raster&tilematrixset=EPSG:3857&format=image/png&height=256&width=256&tilematrix=EPSG:3857:{z}&tilerow={y}&tilecol={x}",
+            "opciones": { "maxZoom": 22, "maxNativeZoom": 18, "attribution": "© IDE Uruguay"}
+            },
+            "ide_mds_urbano": {
+            "nombre": "IDE (MDS Urbano)",
+            "activo": "false",            
+            "url": "https://mapas.ide.uy/geoserver-raster/gwc/service/wmts?service=WMTS&request=GetTile&version=1.0.0&layer=relieve:mds_urbana&style=raster&tilematrixset=EPSG:3857&format=image/png&height=256&width=256&tilematrix=EPSG:3857:{z}&tilerow={y}&tilecol={x}",
+            "opciones": { "maxZoom": 22, "maxNativeZoom": 18, "attribution": "© IDE Uruguay"}
+            },
+            "ide_infrarrojo_nacional": {
+            "nombre": "IDE (Infrarrojo Nacional)",
+            "activo": "false",            
+            "url": "https://mapas.ide.uy/geoserver-raster/gwc/service/wmts?service=WMTS&request=GetTile&version=1.0.0&layer=ortofotos:ortofoto_infrarroja_nacional&style=raster&tilematrixset=EPSG:3857&format=image/png&height=256&width=256&tilematrix=EPSG:3857:{z}&tilerow={y}&tilecol={x}",
+            "opciones": { "maxZoom": 22, "maxNativeZoom": 18, "attribution": "© IDE Uruguay"}
+            },
+            "ide_infrarrojo_urbano": {
+            "nombre": "IDE (Infrarrojo Urbano)",
+            "activo": "false",            
+            "url": "https://mapas.ide.uy/geoserver-raster/gwc/service/wmts?service=WMTS&request=GetTile&version=1.0.0&layer=ortofotos:ortofoto_infrarroja_urbana&style=raster&tilematrixset=EPSG:3857&format=image/png&height=256&width=256&tilematrix=EPSG:3857:{z}&tilerow={y}&tilecol={x}",
+            "opciones": { "maxZoom": 22, "maxNativeZoom": 18, "attribution": "© IDE Uruguay"}
+            },
+            "ide_1966": {
+            "nombre": "IDE (Nacional 1966)",
+            "activo": "false",            
+            "url": "https://mapas.ide.uy/geoserver-raster/gwc/service/wmts?service=WMTS&request=GetTile&version=1.0.0&layer=ortofotos:ortofoto_1966&style=raster&tilematrixset=EPSG:3857&format=image/png&height=256&width=256&tilematrix=EPSG:3857:{z}&tilerow={y}&tilecol={x}",
+            "opciones": { "maxZoom": 22, "maxNativeZoom": 18, "attribution": "© IDE Uruguay"}
+            },
+            "ute_urbano": {
+            "nombre": "UTE (Urbano 2003-2007)",
+            "activo": "false",            
+            "url": "https://mapas.ide.uy/geoserver-raster/gwc/service/wmts?service=WMTS&request=GetTile&version=1.0.0&layer=ortofotos:ortofoto_ute&style=raster&tilematrixset=EPSG:3857&format=image/png&height=256&width=256&tilematrix=EPSG:3857:{z}&tilerow={y}&tilecol={x}",
+            "opciones": { "maxZoom": 22, "maxNativeZoom": 18, "attribution": "© IDE Uruguay"}
+            },
+            "osm_vias": {
+            "nombre": "OpenStreetMap (Vías)",
+            "activo": "false",            
+            "url": "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+            "opciones": { "maxZoom": 22, "maxNativeZoom": 18, "attribution": "© OpenStreetMap" }
+            },
+            "osm_relieve": {
+            "nombre": "OpenStreetMap (Relieve)",
+            "activo": "false",            
+            "url": "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
+            "opciones": { "maxZoom": 22, "maxNativeZoom": 18, "attribution": "© OpenStreetMap" }
+            },    
+            "esri_vias": {
+            "nombre": "Esri (Vias)",
+            "activo": "false",            
+            "url": "https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}",
+            "opciones": { "maxZoom": 22, "maxNativeZoom": 18, "attribution": "© Esri" }
+            },
+            "esri_satelital": {
+            "nombre": "Esri (Satélite)",
+            "activo": "false",            
+            "url": "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+            "opciones": { "maxZoom": 22, "maxNativeZoom": 18, "attribution": "© Esri" }
+            },
+            "carto_claro": {
+            "nombre": "Carto (Claro)",
+            "activo": "false",            
+            "url": "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+            "opciones": { "maxZoom": 22, "maxNativeZoom": 18, "attribution": "© CartoDB" }
+            },
+            "carto_oscuro": {
+            "nombre": "Carto (Oscuro)",
+            "activo": "false",            
+            "url": "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
+            "opciones": { "maxZoom": 22, "maxNativeZoom": 18, "attribution": "© CartoDB" }
+            },
+            "stamen_contraste": {
+            "nombre": "Stamen (Contraste)",
+            "activo": "false",            
+            "url": "https://tiles.stadiamaps.com/tiles/stamen_toner/{z}/{x}/{y}{r}.png",
+            "opciones": { "maxZoom": 22, "maxNativeZoom": 18, "attribution": "© Stamen"}
+            },
+            "stamen_terreno": {
+            "nombre": "Stamen (Terreno)",
+            "activo": "false",            
+            "url": "https://tiles.stadiamaps.com/tiles/stamen_terrain/{z}/{x}/{y}{r}.png",
+            "opciones": { "maxZoom": 22, "maxNativeZoom": 18, "attribution": "© Stamen"}
+            }  
+        }
+    }
+}

@@ -1,0 +1,80 @@
+{
+    "mapaDirecciones": {
+        "idMapaBase": "ide_mapa_base",
+        "centro": [-32.522, -55.766],
+        "zoomInicial": 7,
+        "zoomBuscador": 16,
+        "opcionesDefault": {
+            "maxZoom": 19,
+            "attribution": "© IDE Uruguay",
+            "tileSize": 256
+        }
+    },
+    "apiDirecciones": {
+        "url-base": "https://direcciones.ide.uy/",
+        "servicios": [
+            {
+                "idServicio": "candidates",
+                "url-servicio": "api/v1/geocode/candidates",
+                "parametros": {
+                    "q": "",
+                    "soloLocalidad": "false",
+                    "limit": "10"
+                }
+            },
+            {
+                "idServicio": "find",
+                "url-servicio": "api/v1/geocode/find",
+                "parametros": {
+                    "departamento": "",
+                    "idcalle": "",
+                    "letra": "",
+                    "localidad": "",
+                    "nomvia": "",
+                    "portal": "",
+                    "type": "CALLEyPORTAL"
+                }
+            },
+            {
+                "idServicio": "reverse",
+                "url-servicio": "/api/v1/geocode/reverse",
+                "parametros": {
+                    "latitud": "",
+                    "longitud": "",
+                    "limit": "10"
+                }
+            },
+            {
+                "idServicio": "direcUnica",
+                "url-servicio": "/api/v1/geocode/direcUnica",
+                "parametros": {
+                    "q": "",
+                    "limit": "1"
+                }
+            },
+            {
+                "idServicio": "direcEnPoligono",
+                "url-servicio": "/api/v1/geocode/direcEnPoligono",
+                "parametros": {
+                    "poligono": "",
+                    "tipoDirec": "portales",
+                    "limit": "50"
+                }
+            },
+            {
+                "idServicio": "tramosCalle",
+                "url-servicio": "/api/v1/geocode/tramosCalle",
+                "parametros": {
+                    "idCalle": ""
+                }
+            },
+            {
+                "idServicio": "crucesPorIdCalle",
+                "url-servicio": "/api/v1/geocode/crucesPorIdCalle",
+                "parametros": {
+                    "idCalle": ""
+                }
+            }
+        ]
+    }
+}

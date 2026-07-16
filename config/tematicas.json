@@ -1,0 +1,30 @@
+{
+    "encabezado": {
+        "titulo": "Explorador temático de Datos Abiertos de Uruguay",
+        "descripcion": "Seleccione una temática y explore datos e indicadores públicos"
+    },
+    "tematicas": {
+        "unasev": {
+            "titulo": "Unidad Nacional de Seguridad Vial - UNASEV",
+            "descripcion": "Datos históricos nacionales de siniestros de tránsito en Uruguay",
+            "rutaDatos": "./datos/unasev/",
+            "grupos": {
+                "fallecidos": {
+                    "titulo": "Fallecidos en accidentes de tránsito",
+                    "descripcion": "Serie histórica anual de personas fallecidas en siniestros de tránsito."
+                }
+            }
+        },
+        "sinae": {
+            "titulo": "Sistema Nacional de Emergencias - SINAE",
+            "descripcion": "Datos de fenómenos adversos que generan desastres en Uruguay",
+            "rutaDatos": "./datos/sinae/",
+            "grupos": {
+                "incendios_forestales": {
+                    "titulo": "Incendios Forestales",
+                    "descripcion": "Eventos de incendios forestales registrados por SINAE."
+                }
+            }
+        }
+    }
+}

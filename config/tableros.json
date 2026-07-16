@@ -1,0 +1,244 @@
+{
+    "tableros": [
+        {
+            "idTablero": "incendios_forestales",
+            "idTematica": "sinae",
+            "idGrupo": "incendios_forestales",
+            "ordenVisual": 1,
+            "nombre": "2018 - 2020",
+            "idMapaBase": "carto_claro",
+            "titulo": "SINAE - Incendios Forestales 2018 - 2020",
+            "descripcion": "Casos georreferenciados de incendios forestales entre 2018 - 2020",
+            "formato": "csv",
+            "datos": "incendios_forestales.csv",
+            "latitud": "y",
+            "longitud": "x",
+            "crs": "EPSG:4326",
+            "visualizacion": "puntosAgrupados",
+            "dimensionPrincipal": {
+                "campo": "Departamento",
+                "titulo": "Departamento"
+            },
+            "dimensionesSecundarias": [
+                {
+                    "campo": "Tipo de incendio",
+                    "titulo": "Tipo de incendio"
+                },
+                {
+                    "campo": "Fuente",
+                    "titulo": "Fuente"
+                }
+            ]
+        },
+        {
+            "idTablero": "fallecidos_transito_2013",
+            "idTematica": "unasev",
+            "idGrupo": "fallecidos",
+            "ordenVisual": 1,
+            "nombre": "2013",
+            "idMapaBase": "carto_claro",
+            "titulo": "UNASEV - Fallecidos en accidentes de tránsito 2013",
+            "descripcion": "Casos georreferenciados de fallecidos en siniestros de tránsito",
+            "formato": "csv",
+            "datos": "fallecidos_transito_2013.csv",
+            "latitud": "Y",
+            "longitud": "X",
+            "crs": "EPSG:32721",
+            "visualizacion": "puntosAgrupados",
+            "dimensionPrincipal": {
+                "campo": "Departamento",
+                "titulo": "Departamento"
+            },
+            "dimensionesSecundarias": [
+                {
+                    "campo": "Vehiculo",
+                    "titulo": "Vehiculo"
+                },
+                {
+                    "campo": "Rol",
+                    "titulo": "Rol"
+                }
+            ]
+        },
+        {
+            "idTablero": "fallecidos_transito_2014",
+            "idTematica": "unasev",
+            "idGrupo": "fallecidos",
+            "ordenVisual": 2,
+            "nombre": "2014",
+            "idMapaBase": "carto_claro",
+            "titulo": "UNASEV - Fallecidos en accidentes de tránsito 2014",
+            "descripcion": "Casos georreferenciados de fallecidos en siniestros de tránsito",
+            "formato": "csv",
+            "datos": "fallecidos_transito_2014.csv",
+            "latitud": "Y",
+            "longitud": "X",
+            "crs": "EPSG:32721",
+            "visualizacion": "puntosAgrupados",
+            "dimensionPrincipal": {
+                "campo": "Departamento",
+                "titulo": "Departamento"
+            },
+            "dimensionesSecundarias": [
+                {
+                    "campo": "Vehiculo",
+                    "titulo": "Vehiculo"
+                },
+                {
+                    "campo": "Rol",
+                    "titulo": "Rol"
+                }
+            ]
+        },
+        {
+            "idTablero": "fallecidos_transito_2015",
+            "idTematica": "unasev",
+            "idGrupo": "fallecidos",
+            "ordenVisual": 3,
+            "nombre": "2015",
+            "idMapaBase": "carto_claro",
+            "titulo": "UNASEV - Fallecidos en accidentes de tránsito 2015",
+            "descripcion": "Casos georreferenciados de fallecidos en siniestros de tránsito",
+            "formato": "csv",
+            "datos": "fallecidos_transito_2015.csv",
+            "latitud": "Y",
+            "longitud": "X",
+            "crs": "EPSG:32721",
+            "visualizacion": "puntosAgrupados",
+            "dimensionPrincipal": {
+                "campo": "Departamento",
+                "titulo": "Departamento"
+            },
+            "dimensionesSecundarias": [
+                {
+                    "campo": "Vehiculo",
+                    "titulo": "Vehiculo"
+                },
+                {
+                    "campo": "Rol",
+                    "titulo": "Rol"
+                }
+            ]
+        },
+        {
+            "idTablero": "fallecidos_transito_2016",
+            "idTematica": "unasev",
+            "idGrupo": "fallecidos",
+            "ordenVisual": 4,
+            "nombre": "2016",
+            "idMapaBase": "carto_claro",
+            "titulo": "UNASEV - Fallecidos en accidentes de tránsito 2016",
+            "descripcion": "Casos georreferenciados de fallecidos en siniestros de tránsito",
+            "formato": "csv",
+            "datos": "fallecidos_transito_2016.csv",
+            "latitud": "Y",
+            "longitud": "X",
+            "crs": "EPSG:32721",
+            "visualizacion": "puntosAgrupados",
+            "dimensionPrincipal": {
+                "campo": "Departamento",
+                "titulo": "Departamento"
+            },
+            "dimensionesSecundarias": [
+                {
+                    "campo": "Vehiculo",
+                    "titulo": "Vehiculo"
+                },
+                {
+                    "campo": "Rol",
+                    "titulo": "Rol"
+                }
+            ]
+        },
+        {
+            "idTablero": "fallecidos_transito_2017",
+            "idTematica": "unasev",
+            "idGrupo": "fallecidos",
+            "ordenVisual": 5,
+            "nombre": "2017",
+            "idMapaBase": "carto_claro",
+            "titulo": "UNASEV - Fallecidos en accidentes de tránsito 2017",
+            "descripcion": "Casos georreferenciados de fallecidos en siniestros de tránsito",
+            "formato": "csv",
+            "datos": "fallecidos_transito_2017.csv",
+            "latitud": "Y",
+            "longitud": "X",
+            "crs": "EPSG:32721",
+            "visualizacion": "puntosAgrupados",
+            "dimensionPrincipal": {
+                "campo": "Departamento",
+                "titulo": "Departamento"
+            },
+            "dimensionesSecundarias": [
+                {
+                    "campo": "Vehiculo",
+                    "titulo": "Vehiculo"
+                },
+                {
+                    "campo": "Rol",
+                    "titulo": "Rol"
+                }
+            ]
+        },
+        {
+            "idTablero": "fallecidos_transito_2018",
+            "idTematica": "unasev",
+            "idGrupo": "fallecidos",
+            "ordenVisual": 6,
+            "nombre": "2018",
+            "idMapaBase": "carto_claro",
+            "titulo": "UNASEV - Fallecidos en accidentes de tránsito 2018",
+            "descripcion": "Casos georreferenciados de fallecidos en siniestros de tránsito",
+            "formato": "csv",
+            "datos": "fallecidos_transito_2018.csv",
+            "latitud": "Y",
+            "longitud": "X",
+            "crs": "EPSG:32721",
+            "visualizacion": "puntosAgrupados",
+            "dimensionPrincipal": {
+                "campo": "Departamento",
+                "titulo": "Departamento"
+            },
+            "dimensionesSecundarias": [
+                {
+                    "campo": "Vehiculo",
+                    "titulo": "Vehiculo"
+                },
+                {
+                    "campo": "Rol",
+                    "titulo": "Rol"
+                }
+            ]
+        },
+        {
+            "idTablero": "fallecidos_transito_2019",
+            "idTematica": "unasev",
+            "idGrupo": "fallecidos",
+            "ordenVisual": 7,
+            "nombre": "2019",
+            "idMapaBase": "carto_claro",
+            "titulo": "UNASEV - Fallecidos en accidentes de tránsito 2019",
+            "descripcion": "Casos georreferenciados de fallecidos en siniestros de tránsito",
+            "formato": "csv",
+            "datos": "fallecidos_transito_2019.csv",
+            "latitud": "Y",
+            "longitud": "X",
+            "crs": "EPSG:32721",
+            "visualizacion": "puntosAgrupados",
+            "dimensionPrincipal": {
+                "campo": "Departamento",
+                "titulo": "Departamento"
+            },
+            "dimensionesSecundarias": [
+                {
+                    "campo": "Vehiculo",
+                    "titulo": "Vehiculo"
+                },
+                {
+                    "campo": "Rol",
+                    "titulo": "Rol"
+                }
+            ]
+        }
+    ]
+}

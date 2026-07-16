@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geovisor de Datos Públicos Abiertos</title>
+    <link rel="icon" type="image/svg+xml" href="./imagenes/logo-institucion.svg">
+    
+    <link rel="stylesheet" href="./css/leaflet.css">
+    <link rel="stylesheet" href="./css/MarkerCluster.css">
+    <link rel="stylesheet" href="./css/MarkerCluster.Default.css">    
+    <link rel="stylesheet" href="./css/Control.MiniMap.min.css">
+    <link rel="stylesheet" href="./css/leaflet-routing-machine.css">
+    <link rel="stylesheet" href="./css/estilos.css">
+</head>
+<body>
+
+    <header id="encabezado-principal" class="encabezado">
+
+        <div class="encabezado__contenedor-titulo">
+            <img id="logo-institucion" class="encabezado__logo" src="./imagenes/logo-institucion.svg">
+            
+            <div class="encabezado__grupo-titulo">
+                <p id="texto-institucion" class="encabezado__titulo">Institución</p>
+                <p id="texto-aplicacion" class="encabezado__subtitulo">Aplicación</p>
+            </div>
+        </div>
+
+        <nav id="navegacion-vistas" class="selector-vistas__contenedor oculto">
+            <button class="boton selector-vistas__boton selector-vistas__boton--activo" data-vista="cartografia">Cartografía</button>
+            <button class="boton selector-vistas__boton" data-vista="tematicas">Temáticas</button>
+            <button class="boton selector-vistas__boton" data-vista="direcciones">Direcciones</button>
+        </nav>
+    </header>
+
+    <main class="panel__tarjetas">
+        <p class="tarjeta--bienvenida--iniciando">Inicializando Geovisor...</p>
+    </main>
+
+    <footer id="pie-principal" class="pie">
+        <p id="texto-contacto">© 2026 - IDE Uruguay - ideuy@ide.gub.uy</p>
+    </footer>
+
+    <script src="./librerias/leaflet.js"></script>
+    <script src="./librerias/Control.MiniMap.min.js"></script>
+    <script src="./librerias/proj4.js"></script>
+    <script src="./librerias/geotiff.js"></script>
+    <script src="./librerias/papaparse.min.js"></script>
+    <script src="./librerias/chart.js"></script>
+    <script src="./librerias/leaflet-heat.js"></script>
+    <script src="./librerias/leaflet.markercluster.js"></script>
+    <script src="./librerias/leaflet-routing-machine.min.js"></script>
+    <script type="module" src="./src/main.js"></script>
+</body>
+</html>
