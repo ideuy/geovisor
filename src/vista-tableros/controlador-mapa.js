@@ -98,9 +98,9 @@ export class ControladorMapa {
             '+proj=utm +zone=21 +south +datum=WGS84 +units=m +no_defs';
         const WGS84 = 'EPSG:4326';
 
-        const campoLng = (parseFloat(config.longitud) || 'longitud').toUpperCase();
-        const campoLat = (parseFloat(config.latitud) || 'latitud'
-        ).toUpperCase();
+        const campoLng = (config.longitud || 'longitud').toUpperCase();
+        const campoLat = (config.latitud || 'latitud').toUpperCase();
+
         const campoTooltipMayuscula = campoTooltip
             ? campoTooltip.toUpperCase()
             : '';
