@@ -49,7 +49,7 @@
         {
             "id": "camineria-nacional-mtop",
             "nombre": "Caminería Nacional (MTOP)",
-            "url": "http://geoservicios.mtop.gub.uy:80/geoserver/inf_tte_ttelog_terrestre/v_camineria_nacional/ows",
+            "url": "https://geoservicios.mtop.gub.uy/geoserver/inf_tte_ttelog_terrestre/v_camineria_nacional/wms",
             "capa": "v_camineria_nacional",
             "tipo": "linea",
             "version": "1.3.0",
