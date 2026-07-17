@@ -4,8 +4,6 @@ El GeoVisor es una plataforma web geoespacial interactiva desarrollada para la b
 
 Construido completamente con software libre **JavaScript Vanilla**, HTML5, CSS3, Leaflet, el proyecto sigue una arquitectura desacoplada orientada a componentes donde las configuraciones se definen a través de archivos JSON dinámicos.
 
----
-
 ## Características Principales
 
 ### Módulo de Cartografía y Capas Operativas
@@ -86,7 +84,7 @@ El proyecto está diseñado bajo un estricto principio de modularidad y separaci
 
 La aplicación se caracteriza por no requerir de herramientas de compilación pesadas ni frameworks complejos, logrando un rendimiento óptimo de carga mediante tecnologías estándar del navegador web:
 
-* **HTML5 & CSS3 Avanzado:** Implementación de variables nativas CSS, metodologías estructuradas de diseño de layouts, aislamiento de scroll y **Responsive Web Design (RWD)** completo con soporte nativo de consultas de medios (`@media`) para un comportamiento impecable en teléfonos móviles y tablets.
+* **HTML5 & CSS3:** Implementación de variables nativas CSS, metodologías estructuradas de diseño de layouts, aislamiento de scroll y **Responsive Web Design (RWD)** completo con soporte nativo de consultas de medios (`@media`) para un comportamiento impecable en teléfonos móviles y tablets.
 * **JavaScript Vanilla (ES6+):** Programación orientada a objetos, uso estricto de módulos (`import/export`), asincronía avanzada (`async/await`, `fetch`) y manipulación eficiente del DOM.
 * **Leaflet.js (v1.9):** Biblioteca de referencia para mapas interactivos optimizados para dispositivos móviles.
 * **Chart.js:** Renderizado basado en HTML5 Canvas para visualizaciones estadísticas fluidas.
@@ -149,7 +147,7 @@ Asigna las coordenadas del centro geográfico de visualización inicial para el 
 
 ---
 
-## Créditos e Instituciones Asociadas
+## Recursos y fuente de datos
 
 Este GeoVisor integra recursos, capas y servicios de libre acceso provistos por Instituciones públicas del Estado uruguayo:
 
@@ -159,4 +157,4 @@ Este GeoVisor integra recursos, capas y servicios de libre acceso provistos por 
 * **AGESIC** - Catálogo de Datos Abiertos del Estado Uruguayo.
 * **Unidad Nacional de Seguridad Vial (UNASEV)** - Estadísticas e Indicadores de Siniestralidad.
 * **Sistema Nacional de Emergencias (SINAE)** - Registro Histórico de Eventos Adversos.
-* **Intendencia de Montevideo** e Intendencias del Interior del país - Direcciones Geográficas.
+* **Intendencia Departamentales** de Montevideo y del Interior del país - Direcciones Geográficas.
