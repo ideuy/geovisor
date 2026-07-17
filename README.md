@@ -13,20 +13,22 @@ Construido completamente con software libre **JavaScript Vanilla**, HTML5, CSS3,
 * **Control Avanzado de Capas:** Panel lateral interactivo con controles individuales de visibilidad, deslizadores dinámicos de opacidad y niveles de corte para capas vectoriales y ráster.
 
 * **Herramientas Geográficas:**
-    Medición interactiva de distancias y áreas con tooltips de métricas geométricas en tiempo real.
-    Consulta e identificación de atributos de entidades en el mapa mediante tablas dinámicas.
-    Módulo de **Perfil de Elevación** dinámico que genera un gráfico interactivo transversal de altitudes basado en muestras sobre modelos de elevación digitales (MDT).
+
+* Medición interactiva de distancias y áreas con tooltips de métricas geométricas en tiempo real.
+* Consulta e identificación de atributos de entidades en el mapa mediante tablas dinámicas.
+* Módulo de **Perfil de Elevación** dinámico que genera un gráfico interactivo transversal de altitudes basado en muestras sobre modelos de elevación digitales (MDT).
 
 ### Módulo de Direcciones y Geocodificación Nacional
 
 * **Buscador Flotante:** Barra de búsqueda integrada directamente con las APIs del **Sistema Único de Direcciones del Uruguay (SUDIR)** (`https://direcciones.ide.uy/`). Ofrece sugerencias automáticas de candidatos a medida que el usuario escribe.
 
 * **Servicios Geoespaciales Integrados:**
-    **Geocodificación Directa:** Localización precisa de calles, portales y localidades de todo el país.
-    **Geocodificación Inversa:** Obtención de la dirección geográfica más cercana, coordenadas y datos detallados al hacer clic sobre cualquier punto del territorio nacional.
-    **Direcciones en Área:** Extracción y listado automatizado de todos la direcciones válidas contenidas dentro de una zona delimitada por el usuario en el mapa.
-    **Análisis Vía y Cruces:** Identificación de tramos de calles y cálculo automático de intersecciones viales (cruces) con trazados geométricos automáticos en el mapa.
-    **Enriquecimiento Territorial:** Cruce en tiempo real para determinar la **Serie Electoral** correspondiente a la ubicación geográfica seleccionada.
+
+* **Geocodificación Directa:** Localización precisa de calles, portales y localidades de todo el país.
+* **Geocodificación Inversa:** Obtención de la dirección geográfica más cercana, coordenadas y datos detallados al hacer clic sobre cualquier punto del territorio nacional.
+* **Direcciones en Área:** Extracción y listado automatizado de todos la direcciones válidas contenidas dentro de una zona delimitada por el usuario en el mapa.
+* **Análisis Vía y Cruces:** Identificación de tramos de calles y cálculo automático de intersecciones viales (cruces) con trazados geométricos automáticos en el mapa.
+* **Enriquecimiento Territorial:** Cruce en tiempo real para determinar la **Serie Electoral** correspondiente a la ubicación geográfica seleccionada.
 
 * **Visor de Entorno Urbano (Mapillary):** Contenedor flotante interactivo, redimensionable y adaptable que consume la API de Mapillary para renderizar secuencias fotográficas de calles a nivel de suelo, sincronizado con la posición y dirección en el mapa.
 
