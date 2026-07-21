@@ -22,9 +22,9 @@ export class MapillaryHerramienta {
     activar() {
         this.activo = true;
         this.limpiarTodo();
-        this.orquestador?.registrarDebug(
+        this.orquestador.info(
             'Mapillary',
-            'Modo entorno urbano activado.'
+            'Modo entorno urbano ACTIVADO.'
         );
 
         this.mapa.on('popupopen', this.manejarPopupOpen, this);
@@ -48,7 +48,7 @@ export class MapillaryHerramienta {
     }
 
     mostrarEntorno(lat, lng) {
-        this.orquestador?.registrarDebug(
+        this.orquestador.debug(
             'Mapillary',
             `Buscando imagen cercana a: ${lat}, ${lng}`
         );

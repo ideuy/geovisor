@@ -24,8 +24,8 @@ export class HerramientaMedicion {
     activar() {
         if (this.activo) return;
         this.activo = true;
-        this.orquestador.registrarDebug(
-            'Medición',
+        this.orquestador.info(
+            'Herramienta Medición',
             'Herramienta de medición lineal ACTIVADA.'
         );
 
@@ -40,8 +40,8 @@ export class HerramientaMedicion {
         const coordenada = evento.latlng;
         this.puntos.push(coordenada);
 
-        this.orquestador.registrarDebug(
-            'Medición',
+        this.orquestador.debug(
+            'Herramienta Medición',
             `Punto registrado: Lat: ${coordenada.lat.toFixed(4)}, Lng: ${coordenada.lng.toFixed(4)}`
         );
 
@@ -136,8 +136,8 @@ export class HerramientaMedicion {
     desactivar() {
         if (!this.activo) return;
         this.activo = false;
-        this.orquestador.registrarDebug(
-            'Medición',
+        this.orquestador.debug(
+            'Herramienta Medición',
             'Herramienta de medición lineal DESACTIVADA. Limpiando geometrías.'
         );
 

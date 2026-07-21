@@ -53,6 +53,11 @@ export class PerfilElevacion {
         this.mapa.getContainer().style.cursor = 'crosshair';
         this.mapa.on('click', this.onMapClick);
         this.mapa.on('mousemove', this.onMouseMove);
+
+        this.orquestador.info(
+            'Perfil Elevacion',
+            'Herramienta Perfil de Elevación ACTIVADA.'
+        );
     }
 
     desactivar() {
@@ -82,7 +87,10 @@ export class PerfilElevacion {
         } else if (this.nodos.length === 1) {
             const dist = this.mapa.distance(this.nodos[0], e.latlng);
             if (dist > 640) {
-                alert('No es posible marcar el punto: Excede los 640 metros.');
+                this.orquestador.warn(
+                    'Perfil Elevación',
+                    'La distancia es mayor a 640 metros. No se puede marcar el segundo punto.'
+                );
                 return;
             }
             this.nodos.push(e.latlng);
@@ -156,8 +164,8 @@ export class PerfilElevacion {
     }
 
     async calcularPerfil() {
-        this.orquestador.registrarDebug(
-            'PerfilElevacion',
+        this.orquestador.info(
+            'Perfil Elevación',
             'Iniciando cálculo de perfil MDTHC...'
         );
 
@@ -167,17 +175,17 @@ export class PerfilElevacion {
         const resultados = [];
 
         try {
-            this.orquestador.registrarDebug(
-                'PerfilElevacion',
+            this.orquestador.debug(
+                'Perfil Elevación',
                 '1. Descargando recorte GeoTIFF del área...'
             );
 
             // Un solo request HTTP a GeoServer
             await this.descargarMDTLocal(bounds);
 
-            this.orquestador.registrarDebug(
-                'PerfilElevacion',
-                '2. Calculando elevaciones localmente en memoria...'
+            this.orquestador.debug(
+                'Perfil Elevación',
+                '2. Calculando elevaciones en memoria...'
             );
 
             // Loop instantáneo sin espera de red
@@ -192,15 +200,15 @@ export class PerfilElevacion {
                 });
             }
 
-            this.orquestador.registrarDebug(
-                'PerfilElevacion',
+            this.orquestador.debug(
+                'Perfil Elevación',
                 '3. Renderizando gráfico.'
             );
             this.ui.renderizarGrafico(resultados);
         } catch (error) {
-            this.orquestador.registrarDebug(
-                'PerfilElevacion',
-                `Error: ${error.message}`
+            this.orquestador.error(
+                'Perfil Elevación',
+                'Error: ', error
             );
         }
     }
@@ -209,11 +217,6 @@ export class PerfilElevacion {
      * Realiza un GetMap solicitando un image/geotiff con validación de seguridad.
      */
     async descargarMDTLocal(bounds) {
-        this.orquestador.registrarDebug(
-            'PerfilElevacion',
-            '1. Descargando recorte GeoTIFF del área...'
-        );
-
         const delta = 0.0001;
         const minX = bounds.getWest() - delta,
             minY = bounds.getSouth() - delta;
@@ -252,7 +255,8 @@ export class PerfilElevacion {
             const res = await fetch(url.toString());
 
             if (!res.ok)
-                throw new Error(
+                this.orquestador.throwError(
+                    'Perfil Elevación',
                     `Error de servidor: ${res.status} ${res.statusText}`
                 );
 
@@ -264,16 +268,20 @@ export class PerfilElevacion {
 
             if (esErrorXML) {
                 const textoError = await res.text();
-                console.error('[GeoServer Error]:', textoError);
-                throw new Error(
-                    'El servicio WMS retornó un error XML (revisa parámetros o límites).'
+                this.orquestador.error('Error del GeoServer:', `${textoError}`);
+                this.orquestador.throwError(
+                    'Perfil Elevación',
+                    'El servicio WMS retornó un error XML (revisar parámetros o límites).'
                 );
             }
 
             const buffer = await res.arrayBuffer();
 
             if (typeof GeoTIFF === 'undefined') {
-                throw new Error('La librería GeoTIFF no está cargada.');
+               this.orquestador.throwError(
+                   'Perfil Elevación',
+                   'La librería GeoTIFF no está cargada en /src/Librerias.'
+               );                
             }
 
             const tiff = await GeoTIFF.fromArrayBuffer(buffer);
@@ -284,22 +292,15 @@ export class PerfilElevacion {
             this.rasterWidth = image.getWidth();
             this.rasterHeight = image.getHeight();
 
-            this.orquestador.registrarDebug(
-                'PerfilElevacion',
-                `Raster cargado correctamente: ${this.rasterWidth}x${this.rasterHeight} px.`
+            this.orquestador.debug(
+                'Perfil Elevación',
+                `1.1. Raster cargado correctamente: ${this.rasterWidth}x${this.rasterHeight} px.`
             );
         } catch (error) {
-            this.orquestador.registrarDebug(
-                'PerfilElevacion',
-                `Error fatal al procesar MDT: ${error.message}`
+            this.orquestador.error(
+                'Perfil Elevación',
+                'Error fatal al procesar MDT: ', error
             );
-
-            if (this.ui && typeof this.ui.mostrarError === 'function') {
-                this.ui.mostrarError(
-                    'No se pudo cargar la elevación. Intenta un área más pequeña.'
-                );
-            }
-            throw error;
         }
     }
 
@@ -338,7 +339,6 @@ export class PerfilElevacion {
         let distanciaTotal = 0;
         const segmentos = [];
 
-        // Calcular distancias entre nodos
         for (let i = 0; i < this.nodos.length - 1; i++) {
             const dist = this.mapa.distance(this.nodos[i], this.nodos[i + 1]);
             distanciaTotal += dist;
@@ -381,7 +381,6 @@ export class PerfilElevacion {
             distAcumuladaSegmentoAnterior += seg.length;
         }
 
-        // Asegurarse de incluir el último nodo exacto
         puntosInterpolados.push({
             latlng: this.nodos[this.nodos.length - 1],
             distanciaAcumulada: distanciaTotal,

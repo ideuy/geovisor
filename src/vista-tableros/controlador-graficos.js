@@ -10,7 +10,6 @@ export class ControladorGraficos {
         this.instanciaBarras = null;
         this.instanciaPastel = null;
 
-        // Paleta de colores predefinida
         this.paletaColores = [
             'rgba(54, 162, 235, 0.7)',
             'rgba(255, 99, 132, 0.7)',
@@ -41,12 +40,11 @@ export class ControladorGraficos {
      * Dibuja o actualiza el gráfico de barras.
      */
     renderizarGraficoBarras(labels, data, etiquetaDimension) {
-        // OPTIMIZACIÓN: Si ya existe, actualizamos en lugar de destruir
         if (this.instanciaBarras) {
             this.instanciaBarras.data.labels = labels;
             this.instanciaBarras.data.datasets[0].data = data;
             this.instanciaBarras.data.datasets[0].label = `Casos por ${etiquetaDimension}`;
-            this.instanciaBarras.update('none'); // 'none' evita la animación si no la deseas, o quita el parámetro para animar
+            this.instanciaBarras.update('none'); // 'none' evita la animación o quitar el parámetro para animar
             return;
         }
 
@@ -89,7 +87,6 @@ export class ControladorGraficos {
      * Dibuja o actualiza el gráfico de pastel.
      */
     renderizarGraficoPastel(labels, data) {
-        // OPTIMIZACIÓN: Si ya existe, actualizamos en lugar de destruir
         if (this.instanciaPastel) {
             this.instanciaPastel.data.labels = labels;
             this.instanciaPastel.data.datasets[0].data = data;

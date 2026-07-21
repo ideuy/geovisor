@@ -1,7 +1,6 @@
 /**
  * interfaz-tematicas.js
  * Interfaz pura para la vista de Ejes Temáticos.
- * Mapeado con las clases reales de estilos.css (Secciones 03, 05, 07 y 09)
  */
 export class InterfazTematicas {
     /**
@@ -12,7 +11,6 @@ export class InterfazTematicas {
     static crearContenedorBase(encabezado) {
         const contenedor = document.createElement('div');
         
-        // Sección [09]: Contenedor estructural scrollable
         contenedor.className = 'vista-tematicas-contenedor'; 
 
         contenedor.innerHTML = `
@@ -34,15 +32,10 @@ export class InterfazTematicas {
     static crearTarjetaTematica(idTematica, infoTematica) {
         const tarjeta = document.createElement('div');
         
-        /* Sección [07] y [09]: Combinación de tarjeta base + modificador temático.
-           Mantenemos 'tarjeta-tematica-item' únicamente como gancho funcional 
-           para que la lógica de negocio en 'tematicas.js' (boton.closest) no se rompa.
-        */
         tarjeta.className = 'tarjeta tarjeta--tematicas tarjeta-tematica-item';
         tarjeta.dataset.id = idTematica;
         tarjeta.dataset.ruta = infoTematica.rutaDatos;
 
-        // Generamos los botones combinando el componente base con sus modificadores de herramientas
         let htmlBotones = '';
         if (infoTematica.grupos) {
             Object.entries(infoTematica.grupos).forEach(([idGrupo, infoGrupo]) => {

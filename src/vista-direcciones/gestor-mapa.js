@@ -16,8 +16,8 @@ export class GestorMapa {
     }
 
     inicializar(idContenedor, parametros, proveedor) {
-        this.orquestador.registrarDebug(
-            'GestorMapa',
+        this.orquestador.debug(
+            'Gestor Mapa',
             `Inicializando mapa Leaflet en el contenedor #${idContenedor}.`
         );
 
@@ -62,16 +62,16 @@ export class GestorMapa {
 
         setTimeout(() => {
             if (this.mapa) this.mapa.invalidateSize();
-            this.orquestador.registrarDebug(
-                'GestorMapa',
-                'Tamaño del mapa invalidado/ajustado correctamente.'
+            this.orquestador.debug(
+                'Gestor Mapa',
+                'Tamaño del mapa ajustado correctamente.'
             );
         }, 150);
     }
 
     cambiarMapaBase(nuevoProveedor) {
-        this.orquestador.registrarDebug(
-            'GestorMapa',
+        this.orquestador.debug(
+            'Gestor Mapa',
             `Cambiando mapa base a: ${nuevoProveedor.nombre}`
         );
         if (!this.mapa) return;
@@ -88,9 +88,9 @@ export class GestorMapa {
     }
 
     manejarCapaOperativa(capaConfig, activa) {
-        this.orquestador.registrarDebug(
-            'GestorMapa',
-            `Toggle Capa Operativa WMS: ${capaConfig.nombre} -> ${activa ? 'ON' : 'OFF'}`
+        this.orquestador.debug(
+            'Gestor Mapa',
+            `Capa Operativa WMS: ${capaConfig.nombre} -> ${activa ? 'ON' : 'OFF'}`
         );
         if (!this.mapa) return;
 
@@ -118,8 +118,8 @@ export class GestorMapa {
     }
 
     graficarMarcador(coordenadas, htmlPopup, nivelZoom = 17) {
-        this.orquestador.registrarDebug(
-            'GestorMapa',
+        this.orquestador.debug(
+            'Gestor Mapa',
             `Graficando marcador en lat/lng: ${coordenadas[0]}, ${coordenadas[1]}`
         );
         this.limpiarCapaBusqueda();
@@ -135,8 +135,8 @@ export class GestorMapa {
     }
 
     dibujarPoligonoConEtiqueta(featureGeoJSON, textoEtiqueta) {
-        this.orquestador.registrarDebug(
-            'GestorMapa',
+        this.orquestador.debug(
+            'Gestor Mapa',
             `Dibujando polígono GeoJSON y etiqueta centrada: "${textoEtiqueta}"`
         );
         this.limpiarCapaPoligonos();
@@ -171,8 +171,8 @@ export class GestorMapa {
      * @param {string} nuevoHtmlPopup - Nueva cadena HTML para el popup.
      */
     actualizarPopupMarcador(nuevoHtmlPopup) {
-        this.orquestador.registrarDebug(
-            'GestorMapa',
+        this.orquestador.debug(
+            'Gestor Mapa',
             'Actualizando contenido del Popup actual.'
         );
 
@@ -205,8 +205,8 @@ export class GestorMapa {
     }
 
     destruir() {
-        this.orquestador.registrarDebug(
-            'GestorMapa',
+        this.orquestador.debug(
+            'Gestor Mapa',
             'Destruyendo instancia Leaflet y limpiando memoria.'
         );
         if (this.controlMinimapa) this.controlMinimapa.remove();

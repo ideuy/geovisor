@@ -7,9 +7,9 @@ export class Tematicas {
     }
 
     async inicializar() {
-        this.orquestador.registrarDebug(
+        this.orquestador.info(
             'Temáticas',
-            'Cargando ejes temáticos y catálogos de tableros.'
+            'Iniciando tarjetas temáticas y catálogos de tableros.'
         );
 
         try {
@@ -19,7 +19,10 @@ export class Tematicas {
             ]);
 
             if (!resTematicas.ok || !resTableros.ok)
-                throw new Error('Error al descargar configuraciones.');
+                this.orquestador.throwError(
+                  'Tematicas', 
+                  'Error al descargar configuraciones.'
+                );
 
             const configTemas = await resTematicas.json();
             const configTableros = await resTableros.json();
@@ -46,9 +49,8 @@ export class Tematicas {
 
             this.vincularEventosAcciones(listaTableros);
         } catch (error) {
-            console.error('[ERROR][Temáticas]', error);
+            this.orquestador.error('Tematicas', 'Error: ', error);
             this.elementoRaiz = document.createElement('div');
-            this.elementoRaiz.innerHTML = `<p class="error-msg">Error al inicializar.</p>`;
         }
 
         return this.elementoRaiz;
@@ -72,13 +74,13 @@ export class Tematicas {
                 .sort((a, b) => a.ordenVisual - b.ordenVisual);
 
             if (tablerosDelGrupo.length === 0) {
-                console.error(
-                    `[ERROR] No hay tableros para el grupo: ${idGrupo}`
+                this.orquestador.error(
+                    'Tematicas', `[ERROR] No hay tableros para el grupo: ${idGrupo}`
                 );
                 return;
             }
 
-            this.orquestador.registrarDebug(
+            this.orquestador.debug(
                 'Temáticas',
                 `Invocando grupo [${idGrupo}] con ${tablerosDelGrupo.length} tableros.`
             );

@@ -17,14 +17,12 @@ export class CrucesEje {
         this.activo = false;
         this.datosBuscadorOrig = null;
 
-        this.orquestador.registrarDebug(
-            '[CrucesEje] Instancia creada con éxito.'
-        );
+        this.orquestador.info('Cruces Eje', 'Herramienta creada con éxito.');
     }
 
     activar() {
-        this.orquestador.registrarDebug(
-            '[CrucesEje] Activando herramienta de cruces.'
+        this.orquestador.debug(
+            'Cruces Eje', 'Activando herramienta de cruces ejes.'
         );
         this.activo = true;
         this.layerGroup.clearLayers();
@@ -66,8 +64,8 @@ export class CrucesEje {
         }
 
         this.activo = false;
-        this.orquestador.registrarDebug(
-            '[CrucesEje] Limpieza completa de mapa y estilos realizada.'
+        this.orquestador.debug(
+            'Cruces Eje','Limpieza completa de mapa y estilos realizada.'
         );
     }
 
@@ -76,15 +74,15 @@ export class CrucesEje {
     }
 
     async procesarSeleccion(itemCandidato) {
-        this.orquestador.registrarDebug(
-            '[CrucesEje] Procesando candidato seleccionado:',
-            itemCandidato
+        this.orquestador.debug(
+            'Cruces Eje', 'Procesando candidato seleccionado'
         );
 
         const idCalle =
             itemCandidato.idCalle || itemCandidato.idcalle || itemCandidato.id;
         if (!idCalle) {
-            alert(
+            this.throwError(
+                'Cruces Eje',
                 'El candidato seleccionado no posee un identificador de calle válido (idCalle).'
             );
             return;
@@ -105,8 +103,9 @@ export class CrucesEje {
             ) || this.servicioConfig;
 
         if (!configTramos || !configCruces) {
-            alert(
-                "Error de configuración: No se encontraron las definiciones de 'tramosCalle' o 'crucesPorIdCalle'."
+            this.throwError(
+                'Cruces Ejes',
+                'Error: No se encontraron las definiciones de tramosCalle o crucesPorIdCalle.'
             );
             return;
         }
@@ -145,7 +144,8 @@ export class CrucesEje {
             ]);
 
             if (!resTramos.ok || !resCruces.ok) {
-                throw new Error(
+                this.throwError(
+                    'Cruces Ejes',
                     `Error en endpoints remotos (Status Tramos: ${resTramos.status}, Cruces: ${resCruces.status})`
                 );
             }
@@ -159,10 +159,7 @@ export class CrucesEje {
                 datosCruces
             );
         } catch (error) {
-            console.error('[ERROR][CrucesEje.procesarSeleccion]', error);
-            alert(
-                `Ocurrió un error al procesar las esquinas de la IDE: ${error.message}`
-            );
+            this.orquestador.error('Cruces Eje', 'Error al Procesar Esquinas: ', error);
         } finally {
             document.body.style.cursor = 'default';
         }
@@ -289,8 +286,9 @@ export class CrucesEje {
         textoEsquina
     ) {
         if (!idCalleEsq || idCalleEsq === '0' || idCalleEsq === 'null') {
-            alert(
-                'No se dispone de un ID válido de eje vial para trazar esta calle cruce.'
+            this.orquestador.warn(
+                'Cruces Ejes',
+                `No se dispone de un ID válido de eje vial para trazar esta calle cruce: ${idCalleEsq}`
             );
             return;
         }
@@ -333,7 +331,10 @@ export class CrucesEje {
 
             const respuesta = await fetch(urlCompleta);
             if (!respuesta.ok)
-                throw new Error(`HTTP Error ${respuesta.status}`);
+                this.orquestador.throwError(
+                    'Cruces Ejes',
+                    `HTTP Error ${respuesta.status}`
+                );
 
             const geojsonCruce = await respuesta.json();
 
@@ -393,7 +394,8 @@ export class CrucesEje {
                     marcadorEsquina.setPopupContent(popupActualizadoHtml);
                 }
             } else {
-                alert(
+                this.orquestador.warn(
+                    'Cruces Ejes',
                     'No se localizó el trazado lineal para este eje en los servidores de la IDE.'
                 );
                 if (botonUI) {
@@ -402,7 +404,11 @@ export class CrucesEje {
                 }
             }
         } catch (error) {
-            console.error('[ERROR][CrucesEje.trazarIndividual]', error);
+            this.orquestador.error(
+                'Cruces Ejes',
+                'Error: CrucesEje.trazarIndividual', error
+            );
+            
             if (botonUI) {
                 botonUI.disabled = false;
                 botonUI.classList.remove('estado-trazando');

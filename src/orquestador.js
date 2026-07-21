@@ -1,7 +1,6 @@
 /**
  * orquestador.js
  * Enrutador y Mediador Central de la Arquitectura.
- * Cero código HTML embebido.
  */
 import { Bienvenida } from './presentacion/bienvenida.js';
 import { Cartografia } from './vista-cartografia/cartografia.js';
@@ -22,14 +21,17 @@ export class Orquestador {
         try {
             const respuesta = await fetch('./config/aplicacion.json');
             if (!respuesta.ok)
-                throw new Error('Fallo al descargar aplicacion.json');
+                this.throwError(
+                    'Orquestador',
+                    'Fallo al descargar aplicacion.json.'
+                );
 
             this.configuracionGlobal = await respuesta.json();
             this.propiedadLogger =
                 this.configuracionGlobal.aplicacion.logger || false;
 
-            this.registrarDebug(
-                'Core',
+            this.info(
+                'Orquestador',
                 'Configuración de aplicación cargada con éxito.'
             );
 
@@ -37,37 +39,37 @@ export class Orquestador {
                 const resMapas = await fetch('./config/mapas-base.json');
                 if (resMapas.ok) {
                     this.configuracionMapasBase = await resMapas.json();
-                    this.registrarDebug(
-                        'Core',
+                    this.info(
+                        'Orquestador',
                         'Configuración de mapas base indexada con éxito.'
                     );
                 } else {
-                    console.warn(
-                        '[WARN][Core] No se encontró mapas-base.json. Se usará el fallback de Leaflet.'
-                    );
+                    this.warn('[Orquestador] No se encontró mapas-base.json.');
                 }
             } catch (errMapas) {
-                console.error(
-                    '[ERROR][Core] Error al precargar mapas-base.json:',
+                this.error(
+                    'Orquestador',
+                    'Error al precargar mapas-base.json: ',
                     errMapas
                 );
             }
 
             this.establecerInterfazGlobal();
 
-            // Carga cartografia parametrizada
             this.enrutarA(
                 this.configuracionGlobal.aplicacion['vista-cartografia'] ||
                     'bienvenida'
             );
         } catch (error) {
-            console.error(
-                '[ERROR][Core] Error en inicialización del Orquestador:',
+            this.error(
+                'Orquestador',
+                'Error en inicialización del Orquestador:',
                 error
             );
         }
     }
 
+    /*
     registrarDebug(modulo, mensaje) {
         if (this.propiedadLogger) {
             console.log(
@@ -75,6 +77,85 @@ export class Orquestador {
                 'color: #55B5E5; font-weight: bold;'
             );
         }
+    }
+    */
+
+    /**
+     * Método privado centralizado para procesar la salida por consola.
+     */
+    _log(nivel, modulo, mensaje, detalle = null) {
+        // 1. REGLA DE ERRORES: Los errores críticos SIEMPRE se muestran (incluso con logger en false)
+        if (nivel === 'ERROR') {
+            const etiqueta = `%c[ERROR][${modulo}] ${mensaje}`;
+            const estilo = 'color: #E74C3C; font-weight: bold;';
+
+            if (detalle !== null && detalle !== undefined) {
+                console.error(etiqueta, estilo, detalle);
+            } else {
+                console.error(etiqueta, estilo);
+            }
+            return;
+        }
+
+        // 2. REGLA GENERAL: Si el logger está desactivado, silencia el resto de niveles
+        if (!this.propiedadLogger) return;
+
+        // 3. Mapa de configuraciones visuales y funciones nativas de console
+        const configuraciones = {
+            DEBUG: { color: '#55B5E5', fn: console.log },
+            INFO: { color: '#2ECC71', fn: console.info },
+            WARN: { color: '#F39C12', fn: console.warn },
+            TIME: { color: '#9B59B6', fn: console.time },
+            TIMEEND: { color: '#9B59B6', fn: console.timeEnd },
+        };
+
+        const config = configuraciones[nivel];
+        if (!config) return;
+
+        const etiqueta = `%c[${nivel.startsWith('TIME') ? 'TIEMPO' : nivel}][${modulo}] ${mensaje}`;
+        const estilo = `color: ${config.color}; font-weight: bold;`;
+
+        // Caso especial para time / timeEnd (usan solo la cadena identificadora)
+        if (nivel === 'TIME' || nivel === 'TIMEEND') {
+            config.fn(`${etiqueta}`);
+            return;
+        }
+
+        // Caso habitual: logs con o sin detalle/objeto
+        if (detalle !== null && detalle !== undefined) {
+            config.fn(etiqueta, estilo, detalle);
+        } else {
+            config.fn(etiqueta, estilo);
+        }
+    }
+
+    // --- Métodos Públicos Dedicados ---
+
+    debug(modulo, mensaje, detalle = null) {
+        this._log('DEBUG', modulo, mensaje, detalle);
+    }
+    info(modulo, mensaje, detalle = null) {
+        this._log('INFO', modulo, mensaje, detalle);
+    }
+    warn(modulo, mensaje, detalle = null) {
+        this._log('WARN', modulo, mensaje, detalle);
+    }
+    error(modulo, mensaje, errorObj = null) {
+        this._log('ERROR', modulo, mensaje, errorObj);
+    }
+
+    /** Cronómetros estilizados e integrados con el flag propiedadLogger */
+    time(modulo, etiqueta) {
+        this._log('TIME', modulo, etiqueta);
+    }
+    timeEnd(modulo, etiqueta) {
+        this._log('TIMEEND', modulo, etiqueta);
+    }
+
+    /** Lanzador rápido de excepciones con log previo */
+    throwError(modulo, mensaje) {
+        this.error(modulo, mensaje);
+        throw new Error(`[${modulo}] ${mensaje}`);
     }
 
     establecerInterfazGlobal() {
@@ -85,7 +166,6 @@ export class Orquestador {
         if (appInfo.logo)
             document.getElementById('logo-institucion').src = appInfo.logo;
 
-        // Vincular los botones de vista del header al enrutador
         const contenedorNavegacion =
             document.getElementById('navegacion-vistas');
         if (contenedorNavegacion) {
@@ -114,19 +194,16 @@ export class Orquestador {
      * @param {Object} datos Carga útil / payload enviada por las vistas
      */
     async notificar(canal, datos) {
-        this.registrarDebug(
-            'Mediador',
-            `Notificación recibida en canal [${canal}]`
-        );
+        this.debug('Orquestador', `Notificación recibida en canal [${canal}]`);
 
         switch (canal) {
-            // Se ejecuta al seleccionar un grupo desde la vista Temáticas
             case 'GRUPO_SELECCIONADO': {
                 const { tableroActivo, listaTableros, rutaBase } = datos;
 
                 if (!tableroActivo || !listaTableros) {
-                    console.error(
-                        '[ERROR][Mediador] Datos de grupo no válidos recibidos:',
+                    this.error(
+                        'Orquestador',
+                        'Datos de grupo no válidos recibidos:',
                         datos
                     );
                     this.enrutarA('tematicas');
@@ -134,8 +211,8 @@ export class Orquestador {
                 }
 
                 this.rutaBaseActual = rutaBase;
-                this.registrarDebug(
-                    'Mediador',
+                this.debug(
+                    'Orquestador',
                     `Procesando grupo temático. Descargando CSV inicial: ${tableroActivo.datos}`
                 );
 
@@ -148,30 +225,28 @@ export class Orquestador {
                         crs: tableroActivo.crs,
                     };
 
-                    // Descargamos y procesamos la infraestructura de datos en segundo plano
                     const datosEstandarizados =
                         await this.cargarYParserDatos(origenFuente);
 
-                    // Redireccionamos enviando la configuración, los datos planos y la lista completa de hermanos
                     this.enrutarA('tablero', {
                         configDirecta: tableroActivo,
                         datosEstandarizados: datosEstandarizados,
                         listaTableros: listaTableros,
                     });
                 } catch (error) {
-                    console.error(
-                        '[ERROR][Mediador] Error al procesar datos del grupo seleccionado:',
+                    this.error(
+                        'Orquestador',
+                        'Error al procesar datos del grupo seleccionado:',
                         error
                     );
                 }
                 break;
             }
 
-            // Cambio de combobox temporal interno dentro del propio Tablero (Ej: cambio de año)
             case 'CAMBIO_TABLERO_INTERNO': {
                 const nuevaConfig = datos;
-                this.registrarDebug(
-                    'Mediador',
+                this.debug(
+                    'Orquestador',
                     `Petición de recarga silenciosa recibida. Archivo: ${nuevaConfig.datos}`
                 );
 
@@ -180,8 +255,9 @@ export class Orquestador {
                     typeof this.vistaControladorActual
                         .recargarDatosMismoTablero !== 'function'
                 ) {
-                    console.warn(
-                        '[Mediador] No existe una instancia viva de Tablero para actualizar.'
+                    this.warn(
+                        'Orquestador',
+                        'No existe una instancia viva de Tablero para actualizar.'
                     );
                     break;
                 }
@@ -198,14 +274,14 @@ export class Orquestador {
                     const nuevosDatos =
                         await this.cargarYParserDatos(origenFuente);
 
-                    // Inyección en caliente: Actualiza Leaflet y Chart.js sin parpadeos en el DOM
                     this.vistaControladorActual.recargarDatosMismoTablero(
                         nuevaConfig,
                         nuevosDatos
                     );
                 } catch (error) {
-                    console.error(
-                        '[ERROR][Mediador] Error en recarga interna de datos:',
+                    this.error(
+                        'Orquestador',
+                        'Error en recarga interna de datos:',
                         error
                     );
                 }
@@ -219,8 +295,8 @@ export class Orquestador {
                 break;
 
             default:
-                this.registrarDebug(
-                    'Mediador',
+                this.debug(
+                    'Orquestador',
                     `El canal "${canal}" no tiene un manejador activo.`
                 );
         }
@@ -232,11 +308,10 @@ export class Orquestador {
      * @param {Object} [parametrosExtra] Parámetros estructurados enviados desde el Mediador
      */
     async enrutarA(destino, parametrosExtra = null) {
-        this.registrarDebug('Core', `Enrutando hacia: ${destino}`);
-        
+        this.debug('Orquestador', `Enrutando hacia: ${destino}`);
+
         const contenedor = document.querySelector('.panel__tarjetas');
 
-        // Ciclo de desinstalación segura de la vista anterior (Recolección de basura)
         if (
             this.vistaControladorActual &&
             typeof this.vistaControladorActual.destruir === 'function'
@@ -282,15 +357,16 @@ export class Orquestador {
 
                     const configTablero = {
                         ...parametrosExtra?.configDirecta,
-                        rutaBase: this.rutaBaseActual, 
+                        rutaBase: this.rutaBaseActual,
                     };
                     const datosEstandarizados =
                         parametrosExtra?.datosEstandarizados;
                     const listaTableros = parametrosExtra?.listaTableros;
 
                     if (!configTablero || !datosEstandarizados) {
-                        throw new Error(
-                            'Parámetros insuficientes para inicializar la vista Tablero de forma aislada.'
+                        this.throwError(
+                            'Orquestador',
+                            `Parámetros insuficientes para inicializar la vista Tablero de forma aislada.`
                         );
                     }
                     this.vistaControladorActual = new Tablero(
@@ -303,12 +379,12 @@ export class Orquestador {
                     contenedor.appendChild(
                         await this.vistaControladorActual.inicializar()
                     );
-                } catch (err) {
-                    console.error(
-                        '[ERROR][Core] Error al levantar la vista de Tablero:',
-                        err
+                } catch (error) {
+                    this.error(
+                        'Orquestador',
+                        'Error al levantar la vista del Tablero:',
+                        error
                     );
-                    contenedor.innerHTML = `<div class="alerta-error">Error al cargar el tablero seleccionado. Por favor, vuelva a la sección de Temáticas.</div>`;
                 }
                 break;
 
@@ -321,16 +397,17 @@ export class Orquestador {
                     const nodoHtmlDirecciones =
                         await this.vistaControladorActual.inicializar();
                     contenedor.appendChild(nodoHtmlDirecciones);
-                } catch (err) {
-                    console.error(
-                        '[ERROR][Core] Error al levantar la vista Direcciones:',
-                        err
+                } catch (error) {
+                    this.error(
+                        'Orquestador',
+                        'Error al levantar la vista Direcciones:',
+                        error
                     );
                 }
                 break;
 
             default:
-                console.error(`[ERROR][Core] La ruta "${destino}" no existe.`);
+                this.error(`Orquestador', 'La ruta "${destino}" no existe.`);
         }
     }
 
@@ -339,10 +416,13 @@ export class Orquestador {
      */
     async cargarYParserDatos(fuente) {
         const formatoLimpio = fuente.formato?.toLowerCase();
-
         const respuesta = await fetch(fuente.ruta);
+
         if (!respuesta.ok) {
-            throw new Error(`Error HTTP al descargar recurso: ${fuente.ruta}`);
+            this.throwError(
+                'Orquestador',
+                `Error HTTP al descargar recurso: ${fuente.ruta}`
+            );
         }
 
         switch (formatoLimpio) {
@@ -363,8 +443,8 @@ export class Orquestador {
                     resultadoParseo.errors &&
                     resultadoParseo.errors.length > 0
                 ) {
-                    this.registrarDebug(
-                        'Core',
+                    this.debug(
+                        'Orquestador',
                         `Advertencia en parseo CSV: ${resultadoParseo.errors[0].message}`
                     );
                 }
@@ -372,7 +452,8 @@ export class Orquestador {
                 return resultadoParseo.data;
 
             default:
-                throw new Error(
+                this.throwError(
+                    'Orquestador',
                     `El formato de datos "${fuente.formato}" no está soportado.`
                 );
         }

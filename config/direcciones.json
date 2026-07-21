@@ -11,20 +11,20 @@
         }
     },
     "apiDirecciones": {
-        "url-base": "https://direcciones.ide.uy/",
+        "url-base": "https://direcciones.ide.uy",
         "servicios": [
             {
                 "idServicio": "candidates",
-                "url-servicio": "api/v1/geocode/candidates",
+                "url-servicio": "/api/v1/geocode/candidates",
                 "parametros": {
                     "q": "",
-                    "soloLocalidad": "false",
-                    "limit": "10"
+                    "soloLocalidad": false,
+                    "limit": 10
                 }
             },
             {
                 "idServicio": "find",
-                "url-servicio": "api/v1/geocode/find",
+                "url-servicio": "/api/v1/geocode/find",
                 "parametros": {
                     "departamento": "",
                     "idcalle": "",
@@ -41,7 +41,7 @@
                 "parametros": {
                     "latitud": "",
                     "longitud": "",
-                    "limit": "10"
+                    "limit": 10
                 }
             },
             {
@@ -49,7 +49,7 @@
                 "url-servicio": "/api/v1/geocode/direcUnica",
                 "parametros": {
                     "q": "",
-                    "limit": "1"
+                    "limit": 1
                 }
             },
             {
@@ -58,7 +58,7 @@
                 "parametros": {
                     "poligono": "",
                     "tipoDirec": "portales",
-                    "limit": "50"
+                    "limit": 50
                 }
             },
             {

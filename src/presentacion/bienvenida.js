@@ -1,6 +1,6 @@
 /**
  * bienvenida.js
- * Lógica de negocio de la vista de presentación.
+ * Vista de presentación. 
  * Vincula la interfaz con las acciones de control.
  */
 import { InterfazPresentacion } from './interfaz-presentacion.js';
@@ -16,15 +16,13 @@ export class Bienvenida {
      * @returns {HTMLElement} Vista lista para ser insertada en el DOM principal.
      */
     inicializar() {
-        this.orquestador.registrarDebug(
+        this.orquestador.info(
             'Bienvenida',
-            'Inicializando lógica de vista bienvenida.'
+            'Inicializando lógica de la vista bienvenida.'
         );
 
-        // 1. Obtener la interfaz pura
         this.elementoRaiz = InterfazPresentacion.crearContenedorBienvenida();
 
-        // 2. Vincular eventos de la lógica de negocio (usando el DOM generado)
         const botonIniciar = this.elementoRaiz.querySelector('#btn-iniciar');
         if (botonIniciar) {
             botonIniciar.addEventListener('click', () =>
@@ -36,23 +34,20 @@ export class Bienvenida {
     }
 
     manejarClickComenzar() {
-        this.orquestador.registrarDebug(
+        this.orquestador.debug(
             'Bienvenida',
-            'Botón Ingresar GeoVisor fue presionado. Solicitando cambio de ruta.'
+            'Botón Ingresar GeoVisor fue presionado. Solicitando cambio de vista.'
         );
-        // Delegar el cambio de vista al orquestador global
+
         this.orquestador.enrutarA('cartografia');
     }
 
-    /**
-     * Método de limpieza para evitar fugas de memoria (Memory Leaks)
-     */
     destruir() {
-        this.orquestador.registrarDebug(
+        this.orquestador.debug(
             'Bienvenida',
-            'Destruyendo los eventos de bienvenida.'
+            'Limpiando los eventos de bienvenida.'
         );
-        // Aquí removeríamos listeners si mantuviéramos referencias globales.
+        
         this.elementoRaiz = null;
     }
 }

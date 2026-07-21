@@ -57,7 +57,8 @@ export class InterfazPerfilElevacion {
                 if (this.onCerrar) this.onCerrar();
             });
         } else {
-            console.warn(
+            this.orquestador.warn(
+                'Perfil Elevación',
                 'Interfaz: No se encontró el botón de cierre para vincular eventos.'
             );
         }

@@ -11,10 +11,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         const geovisorApp = new Orquestador();
         await geovisorApp.inicializar();
     } catch (error) {
-        console.error(
-            '[Crítico][main.js] No se pudo arrancar la aplicación:',
-            error
+        this.error(
+            'Main', 
+            'No se pudo arrancar la aplicación: ', error
         );
-        alert('Ocurrió un error grave al cargar la configuración del sistema.');
     }
 });

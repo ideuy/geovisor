@@ -14,17 +14,17 @@ export class SerieElectoral {
     activar() {
         this.activo = true;
         this.limpiarTodo();
-        this.orquestador.registrarDebug(
-            'SerieElectoral',
-            'Herramienta activada.'
+        this.orquestador.info(
+            'Serie Electoral',
+            'Herramienta ACTIVADA.'
         );
         this.mapa.on('popupopen', this.manejarPopupOpen, this);
         this.mapa.on('popupclose', this.manejarPopupClose, this);
 
         if (this.parent.candidatoActual && this.parent.candidatoActual.punto) {
             const { lat, lng } = this.parent.candidatoActual.punto;
-            this.orquestador.registrarDebug(
-                'SerieElectoral',
+            this.orquestador.debug(
+                'Serie Electoral',
                 `Punto previo detectado (${lat}, ${lng}). Consultando automáticamente.`
             );
             this.procesarFoco(lat, lng);
@@ -34,8 +34,8 @@ export class SerieElectoral {
     async procesarFoco(lat, lng) {
         if (!this.activo) return;
 
-        this.orquestador.registrarDebug(
-            'SerieElectoral',
+        this.orquestador.debug(
+            'Serie Electoral',
             `Consultando serie en: ${lat}, ${lng}`
         );
 
@@ -51,7 +51,7 @@ export class SerieElectoral {
                 const feature = geojson.features[0];
                 const serie = feature.properties.serie || 'N/A';
 
-                this.orquestador.registrarDebug(
+                this.orquestador.debug(
                     'SerieElectoral',
                     `Serie encontrada: ${serie}`
                 );
@@ -73,15 +73,15 @@ export class SerieElectoral {
                     );
                 }
             } else {
-                this.orquestador.registrarDebug(
-                    'SerieElectoral',
-                    'No se encontró serie en este punto.'
+                this.orquestador.warn(
+                    'Serie Electoral',
+                    `No se encontró Serie Electoral en éste punto: ${lat}, ${lng}`
                 );
                 this.parent.gestorMapa.limpiarCapaPoligonos();
             }
         } catch (error) {
-            console.error(
-                '[SerieElectoral] Error al consultar servicio:',
+            this.orquestador.error(
+                'Serie Electoral', 'Error al consultar el servicio web:',
                 error
             );
         }

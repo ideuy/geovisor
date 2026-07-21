@@ -4,13 +4,6 @@
  */
 export class DireccionesPoligono {
     constructor(mapa, servicioConfig, orquestador, parent) {
-        if (!mapa) {
-            orquestador.registrarDebug(
-                '[DireccionesPoligono] ERROR: Mapa no recibido.'
-            );
-            return;
-        }
-
         this.mapa = mapa;
         this.servicioConfig = servicioConfig;
         this.orquestador = orquestador;
@@ -52,19 +45,19 @@ export class DireccionesPoligono {
             }),
         };
 
-        this.orquestador.registrarDebug(
-            '[DireccionesPoligono] Instancia creada con soporte de escala adaptativa.'
-        );
+        this.orquestador.info('Búsqueda Área', 'Herramienta creada con éxito.');
     }
 
     activar() {
-        this.orquestador.registrarDebug(
-            '[DireccionesPoligono] Activando herramienta.'
+        this.orquestador.debug(
+            'Búsqueda Área', 'Herramienta ACTIVA.'
         );
+
         this.limpiarTodo();
         this.iniciarModoDibujo();
-        this.orquestador.registrarDebug(
-            '[DireccionesPoligono] Herramienta lista para dibujar directamente en el mapa.'
+
+        this.orquestador.debug(
+            'Búsqueda Área', 'Herramienta lista para dibujar directamente en el mapa.'
         );
     }
 
@@ -79,8 +72,9 @@ export class DireccionesPoligono {
         this.activo = true;
         this.mapa.getContainer().style.cursor = 'crosshair';
         this.mapa.on('click', this.manejadorClickMapa);
-        this.orquestador.registrarDebug(
-            '[DireccionesPoligono] Modo dibujo habilitado.'
+
+        this.orquestador.debug(
+            'Búsqueda Área', 'Modo dibujo habilitado.'
         );
     }
 
@@ -89,8 +83,9 @@ export class DireccionesPoligono {
         this.activo = false;
         this.mapa.getContainer().style.cursor = '';
         this.mapa.off('click', this.manejadorClickMapa);
-        this.orquestador.registrarDebug(
-            '[DireccionesPoligono] Modo dibujo detenido.'
+
+        this.orquestador.debug(
+            'Búsqueda Área', 'Modo dibujo detenido.'
         );
     }
 
@@ -151,18 +146,23 @@ export class DireccionesPoligono {
     }
 
     async buscarEnPoligono(geojsonPoligono) {
-        this.orquestador.registrarDebug(
-            '[DireccionesPoligono] Iniciando búsqueda...'
+
+        this.orquestador.debug(
+            'Búsqueda Área', 'Iniciando búsqueda de Direcciones dentro del polígono...'
         );
+
         document.body.style.cursor = 'wait';
 
         const config = this.servicioConfig;
 
         if (!config || !config['url-base'] || !config['url-servicio']) {
-            this.orquestador.registrarDebug(
-                '[DireccionesPoligono] ERROR: Configuración incompleta.'
+
+            this.orquestador.throwError(
+                'Búsqueda Área',
+                'Error: La configuración del servicio no es válida.',
+                `${config}`
             );
-            alert('Error: La configuración del servicio no es válida.');
+
             document.body.style.cursor = 'default';
             return;
         }
@@ -173,10 +173,11 @@ export class DireccionesPoligono {
 
         const params = config.parametros;
         if (!params) {
-            this.orquestador.registrarDebug(
-                '[DireccionesPoligono] ERROR: Parámetros del servicio no encontrados.'
+            this.orquestador.throwError(
+                'Búsqueda Área',
+                'Error: No se encontraron parámetros de configuración.',
+                `${params}`
             );
-            alert('Error: No se encontraron parámetros de configuración.');
             document.body.style.cursor = 'default';
             return;
         }
@@ -184,8 +185,8 @@ export class DireccionesPoligono {
         const limit = params.limit;
         const tipoDirec = params.tipoDirec;
 
-        this.orquestador.registrarDebug(
-            `[DireccionesPoligono] Aplicando estrictos parámetros: limit=${limit}, tipo=${tipoDirec}`
+        this.orquestador.debug(
+            'Búsqueda Área', `Aplicando los parámetros: limit=${limit}, tipo=${tipoDirec}`
         );
 
         url.searchParams.append('limit', limit);
@@ -194,7 +195,7 @@ export class DireccionesPoligono {
 
         try {
             const response = await fetch(url);
-            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            if (!response.ok) this.orquestador.throwError('Búsqueda Área', `HTTP ${response.status}`);
 
             const data = await response.json();
 
@@ -206,14 +207,16 @@ export class DireccionesPoligono {
             if (data && data.length > 0) {
                 this.renderizarMarcadores(data);
             } else {
-                alert('No se encontraron resultados.');
+                this.orquestador.warn(
+                    'Búsqueda Área',
+                    'No se encontraron resultados.'
+                );
             }
         } catch (error) {
-            this.orquestador.registrarDebug(
-                '[DireccionesPoligono] Error:',
+            this.orquestador.error(
+                'Búsqueda Área', 'Error al consultar Direcciones: ',
                 error
             );
-            alert('Ocurrió un error al consultar.');
         } finally {
             document.body.style.cursor = 'default';
         }
@@ -294,7 +297,7 @@ export class DireccionesPoligono {
                         datos: itemBase
                     };
                     
-                    this.orquestador.registrarDebug(
+                    this.orquestador.debug(
                         'DireccionesPoligono',
                         `Candidato activo actualizado desde marcador del polígono: ${itemBase.address || 'N/A'}`
                     );
@@ -335,8 +338,8 @@ export class DireccionesPoligono {
         this.capaPoligono = null;
         this.capasMarcadores = [];
 
-        this.orquestador.registrarDebug(
-            '[DireccionesPoligono] Estado y capas limpiadas.'
+        this.orquestador.debug(
+            'Búsqueda Área', 'Estado y capas fueron limpiadas.'
         );
     }
 }

@@ -41,7 +41,7 @@ Construido completamente con software libre **JavaScript Vanilla**, HTML5, CSS3,
 
 ## Estructura del Proyecto
 
-El proyecto está diseñado bajo un estricto principio de modularidad y separación de responsabilidades:
+El proyecto está diseñado bajo un principio de modularidad y separación de responsabilidades:
 
 ```text
 ├── .github/workflows/        # Automatización de CI/CD (Despliegues con GitHub Actions)

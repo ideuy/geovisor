@@ -16,7 +16,7 @@ export class HerramientaArea {
         this.puntos = [];
         this.capaPoligono = null;
         this.capasMarcadores = [];
-        this.marcadorCentroidePopup = null; // Un único popup flotante en el centro del polígono
+        this.marcadorCentroidePopup = null;
 
         this.manejadorClickMapa = this.alHacerClickMapa.bind(this);
     }
@@ -27,8 +27,9 @@ export class HerramientaArea {
     activar() {
         if (this.activo) return;
         this.activo = true;
-        this.orquestador.registrarDebug(
-            'Área',
+
+        this.orquestador.info(
+            'Herramienta Área',
             'Herramienta de medición de área ACTIVADA.'
         );
 
@@ -43,8 +44,8 @@ export class HerramientaArea {
         const coordenada = evento.latlng;
         this.puntos.push(coordenada);
 
-        this.orquestador.registrarDebug(
-            'Área',
+        this.orquestador.debug(
+            'Herramienta Área',
             `Vértice añadido: Lat: ${coordenada.lat.toFixed(4)}, Lng: ${coordenada.lng.toFixed(4)}`
         );
 
@@ -149,7 +150,8 @@ export class HerramientaArea {
                 isNaN(p2.lat) ||
                 isNaN(p2.lng)
             ) {
-                console.warn(
+                this.orquestador.warn(
+                    'Herramienta Área',
                     'Dato inválido detectado en cálculo de área, omitiendo segmento.'
                 );
                 continue;
@@ -172,15 +174,14 @@ export class HerramientaArea {
     desactivar() {
         if (!this.activo) return;
         this.activo = false;
-        this.orquestador.registrarDebug(
-            'Área',
+        this.orquestador.debug(
+            'Herramienta Área',
             'Herramienta de área DESACTIVADA. Purgando polígonos y popups.'
         );
 
         this.mapa.getContainer().style.cursor = '';
         this.mapa.off('click', this.manejadorClickMapa);
 
-        // Desvincular y cerrar el popup del polígono antes de destruirlo
         if (this.capaPoligono) {
             this.capaPoligono.closePopup();
             this.capaPoligono.unbindPopup();
@@ -188,13 +189,11 @@ export class HerramientaArea {
             this.capaPoligono = null;
         }
 
-        // Limpiar la referencia por si acaso se usó en otra parte
         if (this.marcadorCentroidePopup) {
             this.mapa.closePopup(this.marcadorCentroidePopup);
             this.marcadorCentroidePopup = null;
         }
 
-        // Quitar todos los vértices arrastrables del mapa
         this.capasMarcadores.forEach((m) => this.mapa.removeLayer(m));
         this.capasMarcadores = [];
         this.puntos = [];

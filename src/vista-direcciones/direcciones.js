@@ -19,10 +19,6 @@ import { MapillaryHerramienta } from './herramientas/mapillary.js';
 export class Direcciones {
     constructor(orquestador) {
         this.orquestador = orquestador;
-        this.orquestador.registrarDebug(
-            'Direcciones',
-            'Iniciando Orquestador de Direcciones.'
-        );
 
         this.elementoRaiz = null;
         this.servicio = null;
@@ -31,7 +27,6 @@ export class Direcciones {
         this.mapillaryComponent = null;
         this.sidebarComponent = null;
 
-        // Instancias dinámicas de herramientas
         this.busquedaInversa = null;
         this.direccionesPoligono = null;
         this.tramosEje = null;
@@ -39,15 +34,12 @@ export class Direcciones {
         this.serieElectoral = null;
         this.mapillaryHerramienta = null;
 
-        // Control de estado para el comportamiento Toggle
         this.herramientaActivaId = null;
 
-        // Configuraciones
         this.configApi = null;
         this.configCapaElectoral = null;
         this.configDirecUnica = null;
 
-        // Configuraciones específicas de servicios
         this.configReverse = null;
         this.configPoligono = null;
         this.configTramos = null;
@@ -57,9 +49,9 @@ export class Direcciones {
     }
 
     async inicializar() {
-        this.orquestador.registrarDebug(
+        this.orquestador.info(
             'Direcciones',
-            'Iniciando instanciación dinámica (inicializar).'
+            'Iniciando el Orquestador de Direcciones.'
         );
 
         try {
@@ -81,7 +73,10 @@ export class Direcciones {
             const datosAplicacion = await respuestaAplicacion.json();
 
             this.configApi = datosDirecciones.apiDirecciones;
-            this.servicio = new ServicioDirecciones(this.configApi);
+            this.servicio = new ServicioDirecciones(
+                this.orquestador,
+                datosDirecciones
+            );
 
             this.configReverse = this.configApi.servicios.find(
                 (s) => s.idServicio === 'reverse'
@@ -114,7 +109,8 @@ export class Direcciones {
             const configMapillary = datosAplicacion.mapillary;
 
             if (!proveedorSeleccionado) {
-                throw new Error(
+                this.orquestador.throwError(
+                    'Direcciones',
                     `El proveedor de mapa base "${mapaConfig.idMapaBase}" no está definido.`
                 );
             }
@@ -128,7 +124,7 @@ export class Direcciones {
                 InterfazDirecciones.crearContenedorDirecciones();
 
             setTimeout(() => {
-                this.orquestador.registrarDebug(
+                this.orquestador.debug(
                     'Direcciones',
                     'Iniciando configuración de componentes visuales.'
                 );
@@ -185,7 +181,6 @@ export class Direcciones {
                 );
 
                 this.renderizarPanelHerramientas();
-
                 this.asegurarControlesAdicionales();
 
                 this.mapillaryComponent = new InterfazMapillary(
@@ -207,15 +202,11 @@ export class Direcciones {
 
             return this.elementoRaiz;
         } catch (error) {
-            console.error(
-                '[ERROR][Direcciones] Falló la inicialización dinámica:',
+            this.orquestador.error(
+                'Direcciones', 
+                'Falló la inicialización del Orquestador de Direcciones:',
                 error
             );
-            this.orquestador.registrarDebug(
-                'Direcciones',
-                `Error crítico en inicialización: ${error.message}`
-            );
-
             this.elementoRaiz = document.createElement('div');
             this.elementoRaiz.className = 'contenedor-vista-direcciones';
             this.elementoRaiz.innerHTML = `<div style="padding:20px; color:var(--color-texto);">Error al cargar componentes cartográficos.</div>`;
@@ -328,9 +319,9 @@ export class Direcciones {
 
                 if (item) {
                     if (this.herramientaActivaId === item.id) {
-                        this.orquestador.registrarDebug(
+                        this.orquestador.debug(
                             'Direcciones',
-                            `Desactivando herramienta por segundo clic (Toggle): ${item.key}`
+                            `Desactivando herramienta por segundo clic: ${item.key}`
                         );
 
                         e.preventDefault();
@@ -352,7 +343,8 @@ export class Direcciones {
                         }, 50);
                     } else {
                         this.herramientaActivaId = item.id;
-                        this.orquestador.registrarDebug(
+
+                        this.orquestador.debug(
                             'Direcciones',
                             `Activando herramienta exclusiva: ${item.key}`
                         );
@@ -384,7 +376,7 @@ export class Direcciones {
                 const mod = modificadores.find((m) => m.id === e.target.id);
                 if (mod) {
                     const activo = e.target.checked;
-                    this.orquestador.registrarDebug(
+                    this.orquestador.debug(
                         'Direcciones',
                         `Modificador ${mod.key} cambiado a: ${activo}`
                     );
@@ -441,7 +433,7 @@ export class Direcciones {
                 this.candidatoActual.datos
             );
 
-            this.orquestador.registrarDebug(
+            this.orquestador.debug(
                 'Direcciones',
                 `Transfiriendo candidato activo a capaBusqueda antes de activar ${herramientaKey}.`
             );
@@ -467,7 +459,7 @@ export class Direcciones {
 
         if (herramientaKey === 'tramosEje' || herramientaKey === 'crucesEje') {
             if (this.buscadorComponent) {
-                this.orquestador.registrarDebug(
+                this.orquestador.debug(
                     'Direcciones',
                     `Configurando buscador en modo exclusivo 'CALLE' para: ${herramientaKey}`
                 );
@@ -495,23 +487,23 @@ export class Direcciones {
     }
 
     destruir() {
-        this.orquestador.registrarDebug(
+        this.orquestador.debug(
             'Direcciones',
-            'Iniciando destrucción de la vista.'
+            'Iniciando destrucción de la vista Direcciones.'
         );
 
         if (this.gestorMapa) this.gestorMapa.destruir();
         if (this.buscadorComponent) this.buscadorComponent.destruir();
 
         this.elementoRaiz = null;
-        this.orquestador.registrarDebug(
+        this.orquestador.debug(
             'Direcciones',
             'Recursos destruidos correctamente.'
         );
     }
 
     manejarSeleccionBuscador(item) {
-        this.orquestador.registrarDebug(
+        this.orquestador.debug(
             'Direcciones',
             `Ítem seleccionado en UI: ${item.address}`
         );
@@ -574,14 +566,13 @@ export class Direcciones {
 
             const urlCompleta = `${baseClean}${servicioClean}?${params.toString()}`;
 
-            this.orquestador.registrarDebug(
-                'Direcciones',
-                `[direcUnica] URL generada dinámicamente: ${urlCompleta}`
-            );
-
             const respuesta = await fetch(urlCompleta);
+
             if (!respuesta.ok) {
-                throw new Error(`HTTP status ${respuesta.status}`);
+                this.orquestador.throwError(
+                    'Direcciones',
+                    `HTTP status ${respuesta.status}`
+                );
             }
 
             const datos = await respuesta.json();
@@ -614,20 +605,13 @@ export class Direcciones {
             if (puntoEncontrado) {
                 this.graficarPuntoEnMapa(puntoEncontrado);
             } else {
-                this.orquestador.registrarDebug(
+                this.orquestador.warn(
                     'Direcciones',
-                    'direcUnica no retornó geometría válida.'
-                );
-                alert(
-                    'No se pudo localizar el centroide de la calle seleccionada.'
+                    'El servicio [direcUnica] no pudo localizar el centroide de la calle seleccionada.'
                 );
             }
         } catch (error) {
-            console.error('[ERROR][Direcciones.DirecUnica]', error);
-            this.orquestador.registrarDebug(
-                'Direcciones',
-                `Error crítico en consulta direcUnica: ${error.message}`
-            );
+            this.orquestador.error('Direcciones', 'Error en consulta [direcUnica]: ', error);
         } finally {
             document.body.style.cursor = 'default';
         }
@@ -641,7 +625,7 @@ export class Direcciones {
             !itemCandidato.portalNumber &&
             !itemCandidato.portal
         ) {
-            this.orquestador.registrarDebug(
+            this.orquestador.debug(
                 'Direcciones',
                 '[GeocodeFind] Cancelado: Evitando error 500 al buscar una calle sin altura.'
             );
@@ -655,7 +639,8 @@ export class Direcciones {
                 await this.servicio.obtenerCoordenadasPrecisas(itemCandidato);
 
             if (!puntoEncontrado) {
-                alert(
+                this.orquestador.warn(
+                    'Direcciones',
                     'No se pudieron recuperar las coordenadas precisas para este elemento.'
                 );
                 return;
@@ -665,7 +650,7 @@ export class Direcciones {
                 this.graficarPuntoEnMapa(puntoEncontrado);
             }
         } catch (error) {
-            console.error('[ERROR][Direcciones.GeocodeFind]', error);
+            this.orquestador.error('Direcciones','[GeocodeFind]: ', error);
         } finally {
             document.body.style.cursor = 'default';
         }
@@ -693,7 +678,7 @@ export class Direcciones {
         );
 
         if (electoralActivo) {
-            this.orquestador.registrarDebug(
+            this.orquestador.debug(
                 'Direcciones',
                 'Reactivando automáticamente Serie Electoral para el nuevo punto.'
             );
@@ -705,7 +690,7 @@ export class Direcciones {
         }
 
         if (mapillaryActivo) {
-            this.orquestador.registrarDebug(
+            this.orquestador.debug(
                 'Direcciones',
                 'Reactivando automáticamente Mapillary para el nuevo punto.'
             );
@@ -774,11 +759,10 @@ export class Direcciones {
             const geojsonPoligono = this.gestorMapa.obtenerGeoJSONDibujado();
 
             if (!geojsonPoligono) {
-                this.orquestador.registrarDebug(
+                this.orquestador.warn(
                     'Direcciones',
-                    'No hay ningún polígono dibujado.'
+                    'No hay ningún polígono dibujado. Se debe dibujar un área en el mapa primero'
                 );
-                alert('Por favor, dibuja un área en el mapa primero.');
                 return;
             }
 
@@ -818,7 +802,7 @@ export class Direcciones {
         const esHerramientaExclusiva =
             herramientasExclusivasKeys.includes(preservar);
 
-        this.orquestador.registrarDebug(
+        this.orquestador.debug(
             'Direcciones',
             `Ejecutando limpieza centralizada. Preservando: ${preservar || 'Ninguna'}`
         );
@@ -826,7 +810,7 @@ export class Direcciones {
         herramientasExclusivasKeys.forEach((key) => {
             if (key !== preservar && this[key]) {
                 if (typeof this[key].desactivar === 'function') {
-                    this.orquestador.registrarDebug(
+                    this.orquestador.debug(
                         'Direcciones',
                         `Desactivando listeners de la herramienta: ${key}`
                     );
@@ -900,10 +884,10 @@ export class Direcciones {
                     } else {
                         try {
                             this.gestorMapa.mapa.removeControl(rc);
-                        } catch (err) {
-                            console.warn(
-                                '[Limpieza] No se pudo remover el control de ruteo:',
-                                err
+                        } catch (error) {
+                            this.orquestador.warn(
+                                'Direcciones', '[Limpieza] No se pudo remover el control de ruteo: ',
+                                error
                             );
                         }
                     }
@@ -916,12 +900,15 @@ export class Direcciones {
 
             if (this.direccionesPoligono?.limpiarTodo)
                 this.direccionesPoligono.limpiarTodo();
+
             if (this.tramosEje?.limpiarTodo) this.tramosEje.limpiarTodo();
+            
             if (this.crucesEje && this.crucesEje.limpiarTodo)
                 this.crucesEje.limpiarTodo();
+            
             if (this.busquedaRadio && this.busquedaRadio.limpiarTodo)
                 this.busquedaRadio.limpiarTodo();
-
+            
             if (!mantenerMapillary && this.mapillaryComponent?.desactivar) {
                 this.mapillaryComponent.desactivar();
             }

@@ -9,13 +9,7 @@ export class BusquedaInversa {
         this.parent = parent;
 
         if (!mapa) {
-            if (this.orquestador?.registrarDebug) {
-                this.orquestador.registrarDebug(
-                    '[BusquedaInversa] ERROR: Mapa no recibido.'
-                );
-            } else {
-                console.error('[BusquedaInversa] ERROR: Mapa no recibido.');
-            }
+            this.orquestador.warn('Búsqueda Inversa', 'Mapa no recibido.');
             return;
         }
 
@@ -77,6 +71,7 @@ export class BusquedaInversa {
                 };
             }
         });
+        this.orquestador.info('Búsqueda Inversa', 'Herramienta creada con éxito.');
     }
 
     activar() {
@@ -110,9 +105,10 @@ export class BusquedaInversa {
             const response = await fetch(url);
 
             if (!response.ok) {
-                throw new Error(
+                  this.orquestador.throwError(
+                    'Búsqueda Inversa',
                     `Error en el servicio de búsqueda inversa: ${response.status} ${response.statusText}`
-                );
+                );                
             }
 
             const data = await response.json();
@@ -124,12 +120,7 @@ export class BusquedaInversa {
                 this.mapa.setView(e.latlng, 17);
             }
         } catch (error) {
-            if (this.orquestador?.registrarDebug) {
-                this.orquestador.registrarDebug(
-                    `[BusquedaInversa] Error: ${error.message}`
-                );
-            }
-            console.error(error);
+            this.orquestador.error('Búsqueda Inversa', 'Error: ', error);
         }
     }
 

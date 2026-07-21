@@ -1,17 +1,22 @@
 /**
  * servicios-direcciones.js
- * Encargado de las peticiones HTTP a la API de Direcciones de la IDE y Mapillary
+ * Módulo encargado de gestionar las peticiones HTTP a las APIs de direcciones/geocodificación
  */
 export class ServicioDirecciones {
-    constructor(configApi) {
+    constructor(orquestador, configApi = null) {
+        this.orquestador = orquestador;
         this.configApi = configApi;
         this.abortControllerCandidatos = null;
     }
 
+    establecerConfiguracion(configApi) {
+        this.configApi = configApi;
+    }
+
     async buscarCandidatos(
         terminoBusqueda,
-        filtroSeleccionado,
-        limiteSeleccionado
+        soloLocalidad = false,
+        limiteSeleccionado = 10
     ) {
         if (this.abortControllerCandidatos) {
             this.abortControllerCandidatos.abort();
@@ -20,28 +25,159 @@ export class ServicioDirecciones {
         this.abortControllerCandidatos = new AbortController();
         const { signal } = this.abortControllerCandidatos;
 
-        const servicioConfig = this.configApi.servicios.find(
-            (s) => s.idServicio === 'candidates'
+        const config = this.configApi?.apiDirecciones || this.configApi;
+        const servicioConfig = config?.servicios?.find(
+            (s) => s.idServicio === 'candidates' || s.id === 'candidates'
         );
-        if (!servicioConfig) return [];
+
+        if (!servicioConfig) {
+            this.orquestador.error(
+                'Servicio Direcciones',
+                'No se encontró la configuración para el servicio "candidates"'
+            );
+            return [];
+        }
 
         const parametros = new URLSearchParams();
+
         if (servicioConfig.parametros) {
             Object.keys(servicioConfig.parametros).forEach((clave) => {
                 let valor = '';
-                if (clave === 'q') valor = terminoBusqueda;
-                else if (clave === 'soloLocalidad')
+
+                if (clave === 'q') {
+                    valor = terminoBusqueda;
+                } else if (clave === 'soloLocalidad') {
+                    valor = Boolean(soloLocalidad);
+                } else if (clave === 'limit') {
                     valor =
-                        filtroSeleccionado === 'Localidades' ? 'true' : 'false';
-                else if (clave === 'limit')
-                    valor =
-                        limiteSeleccionado || servicioConfig.parametros[clave];
-                else valor = servicioConfig.parametros[clave] || '';
-                parametros.append(clave, valor);
+                        limiteSeleccionado ||
+                        servicioConfig.parametros[clave] ||
+                        10;
+                } else {
+                    valor = servicioConfig.parametros[clave] ?? '';
+                }
+
+                parametros.append(clave, String(valor));
             });
         }
 
-        const urlBase = this.configApi['url-base'] || '';
+        const urlBase = config['url-base'] || '';
+        const baseClean = urlBase.endsWith('/')
+            ? urlBase.slice(0, -1)
+            : urlBase;
+        const urlServicio = servicioConfig['url-servicio'] || '';
+        const servicioClean = urlServicio.startsWith('/')
+            ? urlServicio
+            : '/' + urlServicio;
+        const urlCompleta = `${baseClean}${servicioClean}?${parametros.toString()}`;
+
+        const etiquetaTiempo = `Respuesta HTTP para: ${terminoBusqueda}`;
+
+        try {
+            this.orquestador.time('Servicio Direcciones', etiquetaTiempo);
+
+            const respuesta = await fetch(urlCompleta, { signal });
+
+            if (!respuesta.ok) {
+                this.orquestadorthrowError(
+                    'Servicio Direcciones',
+                    `HTTP status error ${respuesta.status}`
+                );
+            }
+
+            return await respuesta.json();
+        } catch (error) {
+            if (error.name === 'AbortError') {
+                this.orquestador.debug(
+                    'Servicio Direcciones',
+                    `Petición obsoleta cancelada para: "${terminoBusqueda}"`
+                );
+                return [];
+            }
+
+            this.orquestador.error(
+                'Servicio Direcciones',
+                `Error al buscar candidatos para: "${terminoBusqueda}"`,
+                error
+            );
+            return [];
+        } finally {
+            this.orquestador.timeEnd('Servicio Direcciones', etiquetaTiempo);
+        }
+    }
+
+    /**
+     * Obtiene las coordenadas precisas consultando el servicio 'find'
+     */
+    async obtenerCoordenadasPrecisas(itemCandidato) {
+        if (!itemCandidato) return null;
+
+        if (itemCandidato.lat && itemCandidato.lng) {
+            return {
+                ...itemCandidato,
+                lat: parseFloat(itemCandidato.lat),
+                lng: parseFloat(itemCandidato.lng),
+            };
+        }
+
+        const config = this.configApi?.apiDirecciones || this.configApi;
+
+        const servicioConfig = config?.servicios?.find(
+            (s) => s.idServicio === 'find' || s.id === 'find'
+        );
+
+        if (!servicioConfig) {
+            this.orquestador.error(
+                'Servicio Direcciones',
+                'No se encontró la configuración para el servicio "find"'
+            );
+            return null;
+        }
+
+        const parametros = new URLSearchParams();
+
+        if (servicioConfig.parametros) {
+            Object.keys(servicioConfig.parametros).forEach((clave) => {
+                const c = clave.toLowerCase();
+                let valor = '';
+
+                if (c === 'nomvia') {
+                    valor = itemCandidato.nomVia || itemCandidato.nomvia;
+                    ('');
+                } else if (c === 'portal') {
+                    valor =
+                        itemCandidato.portalNumber ||
+                        itemCandidato.portal ||
+                        itemCandidato.numero ||
+                        '';
+                } else if (c === 'idcalle') {
+                    valor =
+                        itemCandidato.idCalle || itemCandidato.idcalle || '';
+                } else if (c === 'departamento') {
+                    valor = itemCandidato.departamento || '';
+                } else if (c === 'localidad') {
+                    valor = itemCandidato.localidad || '';
+                } else if (c === 'letra') {
+                    valor = itemCandidato.letra || '';
+                } else if (c === 'type') {
+                    valor =
+                        itemCandidato.type ||
+                        servicioConfig.parametros[clave] ||
+                        'CALLEyPORTAL';
+                } else {
+                    valor =
+                        itemCandidato[clave] ??
+                        servicioConfig.parametros[clave] ??
+                        '';
+                }
+
+                if (valor !== null && valor !== undefined && valor !== '') {
+                    parametros.append(clave, String(valor));
+                }
+            });
+        }
+
+        const urlBase = config['url-base'] || '';
         const baseClean = urlBase.endsWith('/')
             ? urlBase.slice(0, -1)
             : urlBase;
@@ -52,102 +188,53 @@ export class ServicioDirecciones {
         const urlCompleta = `${baseClean}${servicioClean}?${parametros.toString()}`;
 
         try {
-            console.time(
-                `[TIEMPO][API IDE] Respuesta HTTP para: ${terminoBusqueda}`
-            );
+            const respuesta = await fetch(urlCompleta);
 
-            const respuesta = await fetch(urlCompleta, { signal });
-
-            console.timeEnd(
-                `[TIEMPO][API IDE] Respuesta HTTP para: ${terminoBusqueda}`
-            );
-
-            if (!respuesta.ok)
-                throw new Error(`HTTP status ${respuesta.status}`);
-
-            return await respuesta.json();
-        } catch (error) {
-            if (error.name === 'AbortError') {
-                console.log(
-                    `%c[INFO] Petición obsoleta cancelada: ${terminoBusqueda}`,
-                    'color: #f39c12;'
+            if (!respuesta.ok) {
+                this.orquestador.error(
+                    'Servicio Direcciones',
+                    `HTTP status error ${respuesta.status} en GeocodeFind`
                 );
-                return [];
+                return null;
             }
 
-            console.timeEnd(
-                `[TIEMPO][API IDE] Respuesta HTTP para: ${terminoBusqueda}`
+            const datos = await respuesta.json();
+            const resultado = Array.isArray(datos) ? datos[0] : datos;
+
+            if (!resultado) return null;
+
+            const lat =
+                resultado.lat ??
+                resultado.y ??
+                resultado.punto?.lat ??
+                resultado.punto?.y ??
+                resultado.location?.lat;
+
+            const lng =
+                resultado.lng ??
+                resultado.x ??
+                resultado.punto?.lng ??
+                resultado.punto?.x ??
+                resultado.location?.lng;
+
+            if (!lat || !lng) {
+                return null;
+            }
+
+            return {
+                ...itemCandidato,
+                ...resultado,
+                lat: parseFloat(lat),
+                lng: parseFloat(lng),
+            };
+        } catch (error) {
+            this.orquestador.error(
+                'Servicio Direcciones',
+                'Error al obtener coordenadas precisas',
+                error
             );
-            throw error;
-        }
-    }
-
-    async obtenerCoordenadasPrecisas(itemCandidato) {
-        if (!itemCandidato || !this.configApi || !this.configApi.servicios)
             return null;
-
-        const usarDirecUnica =
-            itemCandidato.type === 'POI' || itemCandidato.type === 'CALLE';
-        const idServicioDestino = usarDirecUnica ? 'direcUnica' : 'find';
-
-        const servicioConfig = this.configApi.servicios.find(
-            (s) => s.idServicio === idServicioDestino
-        );
-        if (!servicioConfig) return null;
-
-        const parametros = new URLSearchParams();
-
-        if (servicioConfig.parametros) {
-            Object.keys(servicioConfig.parametros).forEach((clave) => {
-                let valor = '';
-
-                if (clave === 'q') {
-                    valor =
-                        itemCandidato.address ||
-                        itemCandidato.nomVia ||
-                        itemCandidato.nomvia ||
-                        '';
-                } else if (clave === 'idcalle') {
-                    valor =
-                        itemCandidato.idCalle || itemCandidato.idcalle || '';
-                } else if (clave === 'nomvia') {
-                    valor = itemCandidato.nomVia || itemCandidato.nomvia || '';
-                } else if (clave === 'portal') {
-                    valor =
-                        itemCandidato.portalNumber ||
-                        itemCandidato.portal ||
-                        '';
-                } else {
-                    valor =
-                        itemCandidato[clave] !== undefined
-                            ? itemCandidato[clave]
-                            : servicioConfig.parametros[clave] || '';
-                }
-
-                parametros.append(clave, valor);
-            });
         }
-
-        const urlBase = this.configApi['url-base'] || '';
-        const baseClean = urlBase.endsWith('/')
-            ? urlBase.slice(0, -1)
-            : urlBase;
-
-        const urlServicio = servicioConfig['url-servicio'] || '';
-        const servicioClean = urlServicio.startsWith('/')
-            ? urlServicio
-            : '/' + urlServicio;
-
-        const urlCompleta = `${baseClean}${servicioClean}?${parametros.toString()}`;
-
-        const respuesta = await fetch(urlCompleta);
-        if (!respuesta.ok) throw new Error(`HTTP status ${respuesta.status}`);
-
-        const texto = await respuesta.text();
-        if (!texto || texto.trim() === '') return null;
-
-        const datos = JSON.parse(texto);
-        return datos && datos.length > 0 ? datos[0] : null;
     }
 
     async obtenerPoligonoSerieElectoral(lat, lng, configCapa) {

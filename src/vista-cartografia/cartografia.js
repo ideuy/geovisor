@@ -40,9 +40,9 @@ export class Cartografia {
      * @returns {HTMLElement} El nodo raíz listo para ser inyectado en el DOM.
      */
     async inicializar() {
-        this.orquestador.registrarDebug(
+        this.orquestador.info(
             'Cartografía',
-            'Inicializando vista cartográfica completa.'
+            'Inicializando lógica de la vista cartográfica.'
         );
 
         this.elementoRaiz = InterfazCartografia.crearContenedorCartografia();
@@ -136,9 +136,9 @@ export class Cartografia {
             if (!item) return;
 
             if (this.herramientaActivaId === item.id) {
-                this.orquestador.registrarDebug(
+                this.orquestador.debug(
                     'Cartografía',
-                    `Desactivando herramienta por segundo clic (Toggle): ${item.key}`
+                    `Desactivando herramienta por segundo clic: ${item.key}`
                 );
 
                 e.preventDefault();
@@ -147,7 +147,7 @@ export class Cartografia {
 
                 this.desactivarTodasLasHerramientas();
             } else {
-                this.orquestador.registrarDebug(
+                this.orquestador.debug(
                     'Cartografía',
                     `Activando herramienta exclusiva: ${item.key}`
                 );
@@ -215,7 +215,7 @@ export class Cartografia {
                 position: 'topright'
             }).addTo(this.instanciaMapa);
 
-            this.orquestador.registrarDebug(
+            this.orquestador.debug(
                 'Cartografía',
                 `Mapa instanciado. Centro: ${configMapa.centro}`
             );
@@ -265,7 +265,11 @@ export class Cartografia {
 
                 inputCheck.addEventListener('change', (e) => {
                     const estaActiva = e.target.checked;
-                    console.log(`[DEBUG][UI] Switch clickeado para capa: ${capa.id}. Estado: ${estaActiva}`);
+
+                    this.orquestador.debug(
+                        'Cartografía',
+                        `Switch clickeado para capa: ${capa.id}. Estado: ${estaActiva}`
+                    );
                     
                     contenedorOpacidad.style.display = estaActiva ? 'block' : 'none';
                     
@@ -301,14 +305,19 @@ export class Cartografia {
                     }
                 });
                 if (capa.visibleCartografia) {
-                    console.log(`[DEBUG][Init] Capa ${capa.id} configurada activa por defecto.`);
+
+                    this.orquestador.debug(
+                        'Cartografía',
+                        `Capa ${capa.id} configurada activa por defecto.`
+                    );
+                   
                     this.conmutarCapaWMS(capa, true);
                 }
             });
         } catch (error) {
-            console.error(
-                '[ERROR][Cartografía] Error crítico al estructurar el entorno parametrizado:',
-                error
+            this.orquestador.error(
+                'Cartografía', 
+                'Error crítico al estructurar el entorno parametrizado: ', error
             );
         }
     }
@@ -318,10 +327,11 @@ export class Cartografia {
      * @param {string} idMapa Identificador del proveedor elegido.
      */
     cambiarMapaBase(idMapa) {
-        this.orquestador.registrarDebug(
+        this.orquestador.debug(
             'Cartografía',
-            `Solicitando cambio de Tile Base a: ${idMapa}`
+            `Solicitando cambio de Mapa Base a: ${idMapa}`
         );
+
         const infoProveedor = this.mapasBaseConfig[idMapa];
 
         if (!infoProveedor || !this.instanciaMapa) return;
@@ -340,10 +350,16 @@ export class Cartografia {
      * Agrega o remueve del mapa capas del estándar WMS (Web Map Service) de OGC en tiempo real.
      */
     conmutarCapaWMS(configCapa, estaActiva) {
-        console.log(`%c[DEBUG][WMS] conmutarCapaWMS invocado para: ${configCapa.id} (Activar: ${estaActiva})`, "color: #3498db; font-weight: bold;");
+        this.orquestador.debug(
+            'Cartografía',
+            `Conmutar capa WMS invocado para: ${configCapa.id} (Activar: ${estaActiva})`
+        );
 
         if (!this.instanciaMapa) {
-            console.error("[DEBUG][WMS] Error crítico: 'this.instanciaMapa' no está definido.");
+            this.orquestador.error(
+                'Cartografía',
+                'Error crítico: La instancia del mapa no está definida.'
+            );
             return;
         }
 
@@ -355,7 +371,7 @@ export class Cartografia {
             const inputCorte = nodoFila ? nodoFila.querySelector('.interruptor__corte') : null;
             const corteInicial = inputCorte ? parseFloat(inputCorte.value) : 100;
 
-            this.orquestador.registrarDebug(
+            this.orquestador.debug(
                 'Cartografía',
                 `Valores iniciales leídos -> Opacidad: ${opacidadInicial}, Corte: ${corteInicial}%`
             );
@@ -384,7 +400,7 @@ export class Cartografia {
             capaWms.on('load tileload', sincronizarCorte);
             this.instanciaMapa.on('move zoom zoomend', sincronizarCorte);
 
-            this.orquestador.registrarDebug('Cartografía', 'Ejecutando capaWms.addTo(mapa)');
+            this.orquestador.debug('Cartografía', 'Ejecutando capaWms.addTo(mapa)');
             capaWms.addTo(this.instanciaMapa);
 
         } else {
@@ -392,7 +408,7 @@ export class Cartografia {
             if (capaExistente) {
                 this.instanciaMapa.removeLayer(capaExistente);
                 delete this.capasOperativasCargadas[configCapa.id];
-                this.orquestador.registrarDebug('Cartografía', `Capa ${configCapa.id} removida correctamente.`);
+                this.orquestador.debug('Cartografía', `Capa ${configCapa.id} removida correctamente.`);
             }
         }
     }
@@ -431,9 +447,9 @@ export class Cartografia {
      * Apaga todas las herramientas activas y limpia el mapa y la interfaz.
      */
     desactivarTodasLasHerramientas() {
-        this.orquestador.registrarDebug(
+        this.orquestador.debug(
             'Cartografía',
-            'Desactivación global de herramientas solicitada.'
+            'Desactivación global de herramientas solicitadas.'
         );
 
         if (this.moduloMedicion && this.moduloMedicion.activo) {
@@ -458,9 +474,9 @@ export class Cartografia {
      */
     conmutarSidebar(sidebar, boton) {
         this.sidebarColapsado = !this.sidebarColapsado;
-        this.orquestador.registrarDebug(
+        this.orquestador.debug(
             'Cartografía',
-            `Modificando layout. Colapsado = ${this.sidebarColapsado}`
+            `Modificando contenedor del sidebar. Colapsado = ${this.sidebarColapsado}`
         );
 
         sidebar.classList.toggle('barra-lateral--colapsado', this.sidebarColapsado);
@@ -490,7 +506,7 @@ export class Cartografia {
      * Ciclo de vida: Remueve eventos, listeners y limpia el mapa de la memoria global
      */
     destruir() {
-        this.orquestador.registrarDebug(
+        this.orquestador.debug(
             'Cartografía',
             'Ejecutando proceso de recolección de basura del módulo.'
         );

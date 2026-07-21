@@ -31,7 +31,6 @@ export class ControladorMapa {
             maxZoom: 14,
         });
 
-        // Patch defensivo para leaflet-heat
         if (this.instanciaCapas.mapaCalor) {
             const redrawOriginal = this.instanciaCapas.mapaCalor._redraw;
             this.instanciaCapas.mapaCalor._redraw = function (...args) {

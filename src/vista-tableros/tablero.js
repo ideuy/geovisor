@@ -42,6 +42,11 @@ export class Tablero {
             this.actualizarFlujoAnalitico(this.config.dimensionPrincipal.campo);
         });
 
+        this.orquestador.info(
+            'Tablero',
+            'Tablero seleccionado fue iniciado con éxito.'
+        );
+
         return this.nodoRaiz;
     }
 
@@ -94,8 +99,8 @@ export class Tablero {
 
             setTimeout(() => {
                 if (!resuelto) {
-                    console.warn(
-                        '[Tablero] El contenedor del mapa no reportó un tamaño válido a tiempo; se continúa de todas formas.'
+                    this.orquestador.warn(
+                        'Tablero', 'El contenedor del mapa no reportó un tamaño válido a tiempo; se continúa de todas formas.'
                     );
                     finalizar();
                 }
@@ -133,7 +138,7 @@ export class Tablero {
             try {
                 const respuesta = await fetch('./config/tableros.json');
                 if (!respuesta.ok)
-                    throw new Error('No se pudo leer el archivo de tableros.');
+                    this.orquestador.throwError ('Tablero', 'No se pudo leer el archivo de tableros.');
 
                 const configGeneral = await respuesta.json();
                 const todosLosTableros = configGeneral.tableros || [];
@@ -142,7 +147,7 @@ export class Tablero {
                     (t) => t.idGrupo === this.config.idGrupo
                 );
             } catch (error) {
-                console.error('[Tablero] Error al cargar series:', error);
+                this.orquestador.error('Tablero', 'Error al cargar series:', error);
                 cmb.innerHTML =
                     '<option value="">Error al cargar series</option>';
                 return;

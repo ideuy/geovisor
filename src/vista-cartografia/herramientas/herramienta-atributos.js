@@ -26,8 +26,8 @@ export class HerramientaAtributos {
     activar() {
         if (this.activo) return;
         this.activo = true;
-        this.orquestador.registrarDebug(
-            'Atributos',
+        this.orquestador.info(
+            'Herramienta Atributos',
             'Herramienta de consulta de atributos ACTIVADA.'
         );
 
@@ -107,8 +107,8 @@ export class HerramientaAtributos {
             return;
         }
 
-        this.orquestador.registrarDebug(
-            'Atributos',
+        this.orquestador.debug(
+            'Herramienta Atributos',
             `Interrogando posición espacial: ${coordenada.toString()}`
         );
 
@@ -139,7 +139,7 @@ export class HerramientaAtributos {
             const contentType = respuesta.headers.get('content-type');
             if (!contentType || !contentType.includes('application/json')) {
                 const textoExcepcionXml = await respuesta.text();
-                throw new Error('Formato inválido.');
+                this.orquestador.throwError('Herramienta Atributos', `Formato inválido.`);
             }
 
             const datosGeoJSON = await respuesta.json();
@@ -164,9 +164,9 @@ export class HerramientaAtributos {
                 );
             }
         } catch (error) {
-            console.error(
-                '[ERROR][Atributos] Consulta GetFeatureInfo fallida de forma controlada:',
-                error.message
+            this.orquestador.error(
+                'Herramienta Atributos', 
+                'Consulta GetFeatureInfo fallida de forma controlada:', error
             );
             this.popupActivo.setContent(
                 `<span class="alerta__titulo">Consulta de Atributos</span><br>
@@ -249,8 +249,8 @@ export class HerramientaAtributos {
     desactivar() {
         if (!this.activo) return;
         this.activo = false;
-        this.orquestador.registrarDebug(
-            'Atributos',
+        this.orquestador.debug(
+            'Herramienta Atributos',
             'Herramienta de atributos DESACTIVADA. Limpiando elementos residuales de la escena.'
         );
 

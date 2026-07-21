@@ -17,11 +17,12 @@ export class TramosEje {
         this.activo = false;
         this.datosBuscadorOrig = null;
 
-        this.orquestador.registrarDebug('[TramosEje] Instancia creada.');
+        this.orquestador.info('Tramos Eje', 'Herramienta creada con éxito.');
     }
 
     activar() {
-        this.orquestador.registrarDebug('[TramosEje] Activando herramienta.');
+        this.orquestador.debug('Tramos Eje', 'Activando herramienta.');
+
         this.activo = true;
         this.layerGroup.clearLayers();
 
@@ -56,14 +57,13 @@ export class TramosEje {
         );
 
         if (this.datosBuscadorOrig && inputBuscador) {
-            inputBuscador.style.backgroundColor =
-                this.datosBuscadorOrig.fondoInput;
+            inputBuscador.style.backgroundColor = this.datosBuscadorOrig.fondoInput;
             inputBuscador.placeholder = this.datosBuscadorOrig.placeholder;
         }
 
         this.activo = false;
-        this.orquestador.registrarDebug(
-            '[TramosEje] Limpieza completa de mapa y estilos realizada.'
+        this.orquestador.debug(
+            'Tramos Eje', 'Limpieza completa de mapa y estilos completa.'
         );
     }
 
@@ -72,22 +72,26 @@ export class TramosEje {
     }
 
     async procesarSeleccion(itemCandidato) {
-        this.orquestador.registrarDebug(
-            '[TramosEje] Procesando candidato seleccionado:',
-            itemCandidato
+        this.orquestador.debug(
+            'Tramos Eje', 'Procesando candidato seleccionado.'
         );
 
-        const idCalle = itemCandidato.idCalle || itemCandidato.idcalle;
+        const idCalle = itemCandidato.idCalle;
 
         if (!idCalle) {
-            alert(
-                'El candidato seleccionado no posee un identificador de calle válido (idCalle).'
+            this.orquestador.warn(
+                'Tramos Eje',
+                'El candidato seleccionado no posee un idCalle válido: ',
+                itemCandidato.idCalle
             );
             return;
         }
 
         if (!this.servicioConfig) {
-            alert("Servicio 'tramosCalle' no configurado en direcciones.json.");
+            this.orquestador.warn(
+                'Tramos Eje',
+                'Servicio tramosCalle no configurado en direcciones.json'
+            ); 
             return;
         }
 
@@ -119,22 +123,29 @@ export class TramosEje {
             }
 
             const urlCompleta = `${baseClean}${servicioClean}?${params.toString()}`;
-
             const respuesta = await fetch(urlCompleta);
+
             if (!respuesta.ok)
-                throw new Error(`HTTP status ${respuesta.status}`);
+                this.orquestador.throw(
+                    'Tramos Ejes',
+                    `HTTP status ${respuesta.status}`
+                );
 
             const geojson = await respuesta.json();
 
             if (!geojson.features || geojson.features.length === 0) {
-                alert('No se encontraron tramos topológicos para esta calle.');
+                this.orquestador.warn(
+                    'Tramos Ejes',
+                    'No se encontraron tramos topológicos para esta calle.'
+                );
                 return;
             }
-
             this.renderizarTramos(geojson, itemCandidato);
         } catch (error) {
-            console.error('[ERROR][TramosEje]', error);
-            alert('Ocurrió un error al consultar los tramos.');
+            this.orquestador.error(
+                'Tramos Ejes',
+                'Error al consultar los tramos: ', error
+            );
         } finally {
             document.body.style.cursor = 'default';
         }

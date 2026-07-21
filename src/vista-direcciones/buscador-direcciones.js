@@ -1,16 +1,9 @@
 /**
  * buscador-direcciones.js
- * Módulo encargado de gestionar la interfaz del buscador
+ * Módulo encargado de gestionar la interfaz del buscador y desplegar los resultados
  */
 export class BuscadorDirecciones {
-    /**
-     * @param {Object} orquestador - Referencia para logs.
-     * @param {Object} servicio - Instancia de ServicioDirecciones para hacer las consultas.
-     * @param {Object} callbacks - Funciones para notificar al orquestador.
-     * @param {Function} callbacks.onClear - Se ejecuta cuando el usuario borra el input.
-     * @param {Function} callbacks.onSelect - Se ejecuta cuando el usuario elige una sugerencia.
-     */
-    constructor(orquestador, servicio, callbacks) {
+    constructor(orquestador, servicio, callbacks = {}) {
         this.orquestador = orquestador;
         this.servicio = servicio;
         this.callbacks = callbacks;
@@ -23,8 +16,8 @@ export class BuscadorDirecciones {
     }
 
     inicializar() {
-        this.orquestador.registrarDebug(
-            'Buscador',
+        this.orquestador.debug(
+            'Buscador Direcciones',
             'Inicializando módulo de Búsqueda y Autocomplete.'
         );
 
@@ -39,14 +32,11 @@ export class BuscadorDirecciones {
             'select-limite-resultados'
         );
 
-        if (!this.inputBuscarDOM || !this.listaSugerenciasDOM) {
-            console.warn('[Buscador] Faltan elementos clave en el DOM.');
-            return;
+        if (this.inputBuscarDOM) {
+            this.inputBuscarDOM.addEventListener('input', () =>
+                this.manejarInput()
+            );
         }
-
-        this.inputBuscarDOM.addEventListener('input', () =>
-            this.manejarInput()
-        );
 
         if (this.selectFiltroDOM) {
             this.selectFiltroDOM.addEventListener('change', () =>
@@ -59,6 +49,7 @@ export class BuscadorDirecciones {
             );
         }
 
+        // Cierre al hacer clic fuera del contenedor
         document.addEventListener('click', (evento) => {
             const contenedorBuscador = document.getElementById(
                 'buscador-direcciones-container'
@@ -95,22 +86,18 @@ export class BuscadorDirecciones {
     }
 
     refrescarBusqueda() {
-        const query = this.inputBuscarDOM.value.trim();
+        const query = this.inputBuscarDOM
+            ? this.inputBuscarDOM.value.trim()
+            : '';
         if (query.length >= 3) {
             clearTimeout(this.debounceTimer);
             this.ejecutarAutocomplete(query);
         }
     }
 
-    /**
-     * Cambia el filtro del buscador y desbloquea el combobox si es necesario.
-     * @param {string} valor - El valor de la opción ('CALLEyPORTAL', 'CALLE', etc.)
-     * @param {boolean} deshabilitar - Si debe bloquearse el select
-     */
     establecerFiltro(valor, deshabilitar = false) {
         if (!this.selectFiltroDOM) return;
 
-        // Protección de doble ejecución
         if (
             this.selectFiltroDOM.value === valor &&
             this.selectFiltroDOM.disabled === deshabilitar
@@ -127,82 +114,78 @@ export class BuscadorDirecciones {
             );
             if (option) option.selected = true;
         }
-        // ---------------------------------
 
         this.selectFiltroDOM.blur();
-
         this.selectFiltroDOM.dispatchEvent(
             new Event('change', { bubbles: true })
         );
     }
 
-    /**
-     * Consulta al servicio de direcciones sin la opción redundante 'Todos'.
-     * @param {string} terminoBusqueda
-     */
     async ejecutarAutocomplete(terminoBusqueda) {
         if (!this.servicio) return;
-
-        const contenedorResultados = document.querySelector(
-            '.buscador-flotante__resultados'
-        );
 
         const filtroSeleccionado = this.selectFiltroDOM
             ? this.selectFiltroDOM.value
             : 'CALLEyPORTAL';
         const limiteSeleccionado = this.selectLimiteDOM
-            ? this.selectLimiteDOM.value
+            ? parseInt(this.selectLimiteDOM.value, 10)
             : 10;
 
-        const soloLocalidadParam =
-            filtroSeleccionado === 'LOCALIDAD' ? 'true' : 'false';
+        // Booleano nativo true si la categoría seleccionada es LOCALIDAD
+        const soloLocalidad = filtroSeleccionado === 'LOCALIDAD';
 
         try {
-            const listaCandidatos = await this.servicio.buscarCandidatos(
+            const respuestaServicio = await this.servicio.buscarCandidatos(
                 terminoBusqueda,
-                soloLocalidadParam,
+                soloLocalidad,
                 limiteSeleccionado
             );
 
+            // Garantizamos trabajar siempre con un Array válido
+            const listaCandidatos = Array.isArray(respuestaServicio)
+                ? respuestaServicio
+                : respuestaServicio?.candidates || [];
+
             const resultadosFiltrados = listaCandidatos.filter((item) => {
+                if (!item) return false;
                 if (filtroSeleccionado === 'LOCALIDAD')
                     return item.type === 'LOCALIDAD';
                 if (filtroSeleccionado === 'CALLEyPORTAL') return true;
                 if (filtroSeleccionado === 'CALLE')
                     return item.type === 'CALLE';
                 if (filtroSeleccionado === 'POI') return item.type === 'POI';
-                return false;
+                return true;
             });
 
-            if (resultadosFiltrados.length === 0 && contenedorResultados) {
-                contenedorResultados.innerHTML =
-                    '<div class="mensaje-sin-resultados">No se encontraron coincidencias.</div>';
-            } else {
-                this.renderizarResultados(resultadosFiltrados);
-            }
+            // Muestra sugerencias o mensaje de sin resultados dentro de la <ul> existente
+            this.renderizarResultados(resultadosFiltrados);
         } catch (error) {
-            console.error('[ERROR][Buscador.autocomplete]', error);
+            this.orquestador.error(
+                'Buscador Direcciones',
+                'Error en ejecutarAutocomplete:',
+                error
+            );
 
-            if (contenedorResultados) {
-                contenedorResultados.innerHTML = `
-                <div class="mensaje-error-busqueda">
-                    <p>⚠️ <strong>Error de conexión</strong></p>
-                    <small>No pudimos conectar con el servidor. Verifica tu red e intenta nuevamente.</small>
-                </div>
-            `;
+            if (this.listaSugerenciasDOM) {
+                this.listaSugerenciasDOM.innerHTML = `
+                    <li class="mensaje-error-busqueda">
+                        ⚠️ <strong>Error de conexión</strong><br>
+                        <small>No pudimos conectar con el servicio.</small>
+                    </li>
+                `;
+                this.listaSugerenciasDOM.style.display = 'block';
             }
         }
     }
 
-    /**
-     * Construye e inyecta los elementos <li> en la lista desplegable.
-     * @param {Array} items
-     */
     renderizarResultados(items) {
         this.limpiarSugerenciasDOM();
+        if (!this.listaSugerenciasDOM) return;
 
-        if (items.length === 0) {
-            this.listaSugerenciasDOM.innerHTML = `<li class="buscador-flotante__sin-resultados">Sin resultados coincidentes</li>`;
+        if (!items || items.length === 0) {
+            this.listaSugerenciasDOM.innerHTML = `
+                <li class="buscador-flotante__sin-resultados">Sin resultados coincidentes</li>
+            `;
             this.listaSugerenciasDOM.style.display = 'block';
             return;
         }
@@ -210,27 +193,33 @@ export class BuscadorDirecciones {
         const fragmento = document.createDocumentFragment();
 
         items.forEach((item) => {
+            const direccionTexto =
+                item.address ||
+                item.direccion ||
+                item.nomVia ||
+                'Dirección sin nombre';
+
             const elementoLi = document.createElement('li');
             elementoLi.className = 'resultado-item';
-            elementoLi.setAttribute('data-tooltip', item.address);
-            elementoLi.setAttribute('title', item.address);
+            elementoLi.setAttribute('data-tooltip', direccionTexto);
+            elementoLi.setAttribute('title', direccionTexto);
 
-            let rutaIcono = '/imagenes/direccion.svg';
+            let rutaIcono = './imagenes/direccion.svg';
             if (item.type === 'LOCALIDAD')
-                rutaIcono = '/imagenes/localidad.svg';
-            else if (item.type === 'CALLE') rutaIcono = '/imagenes/calle.svg';
-            else if (item.type === 'POI') rutaIcono = '/imagenes/poi.svg';
+                rutaIcono = './imagenes/localidad.svg';
+            else if (item.type === 'CALLE') rutaIcono = './imagenes/calle.svg';
+            else if (item.type === 'POI') rutaIcono = './imagenes/poi.svg';
 
             elementoLi.innerHTML = `
-                <img src=".${rutaIcono}" class="buscador-flotante__resultados-icono" alt="${item.type}" onerror="this.style.display='none';">
-                <span>${item.address}</span>
+                <img src="${rutaIcono}" class="buscador-flotante__resultados-icono" alt="${item.type || 'icono'}" onerror="this.style.display='none';">
+                <span>${direccionTexto}</span>
             `;
 
             elementoLi.addEventListener('click', (e) => {
                 e.stopPropagation();
                 this.isSelecting = true;
 
-                this.inputBuscarDOM.value = item.address;
+                this.inputBuscarDOM.value = direccionTexto;
                 this.limpiarSugerenciasDOM();
 
                 if (this.callbacks.onSelect) {
