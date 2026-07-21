@@ -1740,6 +1740,15 @@ position: absolute;
     word-break: break-word;
 }
 
+.tabla-atributos td:first-child {
+    white-space: nowrap;
+    padding-right: 8px;
+}
+
+.tabla-atributos td:last-child {
+    word-break: break-word;
+}
+
 /* ==========================================================================
    [17.3] MENSAJES DE ALERTA
    ========================================================================== */

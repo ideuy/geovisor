@@ -22,7 +22,8 @@ export class InterfazPerfilElevacion {
             </div>
             <div class="cuerpo-panel-elevacion">
                 <div id="aviso-precision" class="aviso-precision">
-                    ✓ Modo de máxima precisión MDTHC (32cm/px)
+                    ✓ Modo de máxima precisión MDTHC (32cm/px) <br>
+                    ✓ Cálculo de cotas ortométricas basadas en el modelo geoidal EGM2008 EPSG:3855
                 </div>
                 <div class="contenedor-grafico-perfil">
                     <canvas id="grafico-elevacion"></canvas>
