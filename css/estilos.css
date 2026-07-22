@@ -712,6 +712,7 @@ position: absolute;
     margin-bottom: 10px;
 }
 
+/* Para Chrome, Edge, Safari */
 .interruptor__opacidad::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
@@ -728,6 +729,7 @@ position: absolute;
     transform: scale(1.15);
 }
 
+/* Para Firefox */
 .interruptor__opacidad::-moz-range-thumb {
     width: 10px;
     height: 10px;

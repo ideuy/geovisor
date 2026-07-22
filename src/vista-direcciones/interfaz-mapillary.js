@@ -1,6 +1,6 @@
 /**
  * interfaz-mapillary.js
- * Gestiona el visor de Mapillary
+ * Gestiona el visor oficial de Mapillary usando mapillary-js (v4)
  */
 export class InterfazMapillary {
     constructor(contenedorId, orquestador, configuracion) {
@@ -9,13 +9,10 @@ export class InterfazMapillary {
 
         this.config = configuracion;
         this.accessToken = this.config.token;
-        this.urlBase = this.config['url-base'];
-        this.radio = this.config.radio;
-        this.limite = this.config.limite;
+        this.urlBase = this.config['url-base'] || 'https://graph.mapillary.com';
 
         this.activo = false;
-        this.imagenes = [];
-        this.indiceActual = 0;
+        this.viewer = null; // Instancia del visor Mapillary
     }
 
     activar(puntoActual) {
@@ -36,9 +33,21 @@ export class InterfazMapillary {
 
     desactivar() {
         this.activo = false;
+        this.destruirVisor();
         if (this.contenedor) {
             this.contenedor.innerHTML = '';
             this.contenedor.style.display = 'none';
+        }
+    }
+
+    destruirVisor() {
+        if (this.viewer) {
+            try {
+                this.viewer.remove(); // Libera los recursos WebGL y listeners
+            } catch (e) {
+                this.orquestador.warn('Mapillary','Error al remover el visor:', e);
+            }
+            this.viewer = null;
         }
     }
 
@@ -48,10 +57,11 @@ export class InterfazMapillary {
         this.activo = true;
         this.contenedor.style.display = 'block';
 
-        const lngFija = parseFloat(punto.lng).toFixed(6);
-        const latFija = parseFloat(punto.lat).toFixed(6);
+        const lat = parseFloat(punto.lat).toFixed(6);
+        const lng = parseFloat(punto.lng).toFixed(6);
 
-        const urlBusqueda = `${this.urlBase}/images?access_token=${this.accessToken}&fields=id,captured_at,thumb_1024_url&lat=${latFija}&lng=${lngFija}&radius=${this.radio}&limit=${this.limite}`;
+        // Consultamos la API de Mapillary usando 'near' para obtener el ID de la imagen cercana
+        const urlBusqueda = `${this.urlBase}/images?access_token=${this.accessToken}&fields=id&near=${lng},${lat}&limit=1`;
 
         try {
             const respuesta = await fetch(urlBusqueda);
@@ -59,11 +69,25 @@ export class InterfazMapillary {
             const datos = await respuesta.json();
 
             if (datos.data && datos.data.length > 0) {
-                this.imagenes = datos.data.sort((a, b) => b.captured_at - a.captured_at);
-                this.indiceActual = 0;
+                const idImagen = datos.data[0].id;
 
-                this.mostrarImagenActual();
+                // Si el visor no existe, lo instanciamos
+                if (!this.viewer) {
+                    this.contenedor.innerHTML = ''; // Limpiamos mensajes previos
+
+                    this.viewer = new mapillaryjs.Viewer({
+                        accessToken: this.accessToken,
+                        container: this.contenedor,
+                        imageId: idImagen,
+                    });
+                } else {
+                    // Si ya existe la instancia, solo nos desplazamos a la nueva imagen
+                    this.viewer.moveTo(idImagen);
+                }
+
+                this.asegurarTirador();
             } else {
+                this.destruirVisor();
                 this.contenedor.innerHTML = `
                     <div class="mapillary-mensaje">
                         No hay cobertura de fotos en esta ubicación.
@@ -71,78 +95,15 @@ export class InterfazMapillary {
                 this.asegurarTirador();
             }
         } catch (error) {
-            console.error('[Mapillary Error]:', error);
+            this.orquestador.error('Mapillary', 'Error: ', error);
+            this.destruirVisor();
             this.contenedor.innerHTML = `
                 <div class="mapillary-error-contenedor">
                     <p class="mapillary-error-titulo">Error de Conexión</p>
-                    <p class="mapillary-error-descripcion">No pudimos cargar las imágenes de Mapillary.</p>
+                    <p class="mapillary-error-descripcion">No pudimos cargar el visor de Mapillary.</p>
                 </div>`;
             this.asegurarTirador();
         }
-    }
-
-    mostrarImagenActual() {
-        if (!this.imagenes || this.imagenes.length === 0) return;
-
-        const img = this.imagenes[this.indiceActual];
-
-        let fechaFormateada = 'N/A';
-        if (img.captured_at) {
-            const fechaObj = new Date(img.captured_at);
-            const meses = [
-                'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-                'Julio', 'Agosto', 'Setiembre', 'Octubre', 'Noviembre', 'Diciembre'
-            ];
-            const mesNombre = meses[fechaObj.getMonth()];
-            const anioFull = fechaObj.getFullYear();
-            fechaFormateada = `${mesNombre} ${anioFull}`;
-        }
-
-        const total = this.imagenes.length;
-        const actual = this.indiceActual + 1;
-
-        this.contenedor.innerHTML = `
-            <div class="mapillary-cuerpo-flotante">
-                <div class="mapillary-contenedor-imagen">
-                    <img src="${img.thumb_1024_url}" class="mapillary-imagen" alt="Vista de calle de Mapillary">
-                </div>
-
-                <div class="mapillary-etiqueta-fecha">${fechaFormateada}</div>
-                <div class="mapillary-etiqueta-contador">${actual} de ${total}</div>
-
-                ${total > 1 ? `
-                    <button id="mapillary-boton-anterior" class="mapillary-flecha mapillary-flecha--izquierda" title="Foto anterior">
-                        &#10094;
-                    </button>
-                    <button id="mapillary-boton-siguiente" class="mapillary-flecha mapillary-flecha--derecha" title="Foto siguiente">
-                        &#10095;
-                    </button>
-                ` : ''}
-            </div>
-        `;
-
-        if (total > 1) {
-            const btnPrev = this.contenedor.querySelector('#mapillary-boton-anterior');
-            const btnNext = this.contenedor.querySelector('#mapillary-boton-siguiente');
-
-            if (btnPrev) {
-                btnPrev.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    this.indiceActual = (this.indiceActual - 1 + total) % total;
-                    this.mostrarImagenActual();
-                });
-            }
-
-            if (btnNext) {
-                btnNext.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    this.indiceActual = (this.indiceActual + 1) % total;
-                    this.mostrarImagenActual();
-                });
-            }
-        }
-
-        this.asegurarTirador();
     }
 
     asegurarTirador() {
@@ -164,7 +125,12 @@ export class InterfazMapillary {
 
                 this.contenedor.style.height = `${nuevoAlto}px`;
                 this.contenedor.style.width = `${nuevoAncho}px`;
-                
+
+                // Cuando se redimensiona el contenedor, mapillary-js requiere recalculado de canvas
+                if (this.viewer) {
+                    this.viewer.resize();
+                }
+
                 if (this.orquestador && this.orquestador.mapaDirecciones) {
                     this.orquestador.mapaDirecciones.invalidateSize();
                 }

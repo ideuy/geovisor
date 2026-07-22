@@ -4,11 +4,11 @@
         "titulo": "GeoVisor de Datos Abiertos de Uruguay",
         "logo": "./imagenes/logo-institucion.svg",
         "vista-inicial": "bienvenida",
-        "logger": true
+        "logger": false
     },
     "mapillary": {
         "url-base": "https://graph.mapillary.com",
-        "token": "__MAPILLARY_TOKEN__",
+        "token": "MLY|36830594039920108|f68483eb8a92b897c7368140451a887f",
         "radio": 50,
         "limite": 10
     },
