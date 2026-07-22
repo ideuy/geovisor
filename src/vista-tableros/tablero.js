@@ -100,7 +100,8 @@ export class Tablero {
             setTimeout(() => {
                 if (!resuelto) {
                     this.orquestador.warn(
-                        'Tablero', 'El contenedor del mapa no reportó un tamaño válido a tiempo; se continúa de todas formas.'
+                        'Tablero',
+                        'El contenedor del mapa no reportó un tamaño válido a tiempo; se continúa de todas formas.'
                     );
                     finalizar();
                 }
@@ -138,7 +139,10 @@ export class Tablero {
             try {
                 const respuesta = await fetch('./config/tableros.json');
                 if (!respuesta.ok)
-                    this.orquestador.throwError ('Tablero', 'No se pudo leer el archivo de tableros.');
+                    this.orquestador.throwError(
+                        'Tablero',
+                        'No se pudo leer el archivo de tableros.'
+                    );
 
                 const configGeneral = await respuesta.json();
                 const todosLosTableros = configGeneral.tableros || [];
@@ -147,7 +151,11 @@ export class Tablero {
                     (t) => t.idGrupo === this.config.idGrupo
                 );
             } catch (error) {
-                this.orquestador.error('Tablero', 'Error al cargar series:', error);
+                this.orquestador.error(
+                    'Tablero',
+                    'Error al cargar series:',
+                    error
+                );
                 cmb.innerHTML =
                     '<option value="">Error al cargar series</option>';
                 return;
@@ -164,6 +172,54 @@ export class Tablero {
             }
             cmb.appendChild(opcion);
         });
+    }
+
+    recargarDatosMismoTablero(nuevaConfig, nuevosDatos) {
+        this.orquestador.debug(
+            'Tablero',
+            `Recarga silenciosa de datos: ${nuevaConfig.idTablero}`
+        );
+
+        this.config = nuevaConfig;
+        this.datos = nuevosDatos || [];
+        this.procesador.setDatosYConfiguracion(this.datos, this.config);
+
+        const elementoTitulo = this.nodoRaiz.querySelector('#mapa-titulo');
+        if (elementoTitulo) {
+            elementoTitulo.textContent = this.config.titulo || '';
+        }
+
+        const cmbTableros = this.nodoRaiz.querySelector('#cmb-tableros');
+        if (cmbTableros && cmbTableros.value !== this.config.idTablero) {
+            cmbTableros.value = this.config.idTablero;
+        }
+
+        this.poblarComboboxDimensiones();
+
+        const cmbDimensiones = this.nodoRaiz.querySelector('#cmb-dimensiones');
+        const campoDimension = cmbDimensiones
+            ? cmbDimensiones.value
+            : this.config.dimensionPrincipal.campo;
+
+        this.mapaCtrl.actualizarCapas(this.datos, this.config, campoDimension);
+        this.actualizarFlujoAnalitico(campoDimension);
+
+        this._habilitarComboTableros();
+    }
+
+    notificarErrorRecarga() {
+        const cmbTableros = this.nodoRaiz.querySelector('#cmb-tableros');
+        if (cmbTableros) {
+            cmbTableros.value = this.config.idTablero;
+        }
+        this._habilitarComboTableros();
+    }
+
+    _habilitarComboTableros() {
+        const cmbTableros = this.nodoRaiz.querySelector('#cmb-tableros');
+        if (cmbTableros) {
+            cmbTableros.disabled = false;
+        }
     }
 
     poblarComboboxDimensiones() {
@@ -191,18 +247,18 @@ export class Tablero {
         if (cmbTableros) {
             cmbTableros.addEventListener('change', (e) => {
                 const idSeleccionado = e.target.value;
-                // Usamos la caché que ya poblamos anteriormente
                 const tableroDestino = this.tablerosHermanos.find(
                     (t) => t.idTablero === idSeleccionado
                 );
 
-                if (tableroDestino) {
-                    this.orquestador.notificar('GRUPO_SELECCIONADO', {
-                        tableroActivo: tableroDestino,
-                        listaTableros: this.tablerosHermanos,
-                        rutaBase: this.config.rutaBase,
-                    });
-                }
+                if (!tableroDestino) return;
+
+                cmbTableros.disabled = true;
+
+                this.orquestador.notificar(
+                    'CAMBIO_TABLERO_INTERNO',
+                    tableroDestino
+                );
             });
         }
 

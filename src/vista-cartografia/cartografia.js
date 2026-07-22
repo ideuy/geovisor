@@ -249,11 +249,12 @@ export class Cartografia {
             );
 
             datosCapas.capasOperativas.forEach((capa) => {
-                const nodoFilaCapa = InterfazCartografia.crearFilaInterruptorCapa({
-                    id: capa.id,
-                    nombre: capa.nombre,
-                    activoPorDefecto: capa.visibleCartografia,
-                });
+                const nodoFilaCapa =
+                    InterfazCartografia.crearFilaInterruptorCapa({
+                        id: capa.id,
+                        nombre: capa.nombre,
+                        activoPorDefecto: capa.visibleInicial,
+                    });
                 panelInterruptores.appendChild(nodoFilaCapa);
 
                 const inputCheck = nodoFilaCapa.querySelector('.interruptor__input');

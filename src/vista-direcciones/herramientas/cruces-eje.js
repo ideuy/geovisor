@@ -81,7 +81,7 @@ export class CrucesEje {
         const idCalle =
             itemCandidato.idCalle || itemCandidato.idcalle || itemCandidato.id;
         if (!idCalle) {
-            this.throwError(
+            this.orquestador.throwError(
                 'Cruces Eje',
                 'El candidato seleccionado no posee un identificador de calle válido (idCalle).'
             );
@@ -103,7 +103,7 @@ export class CrucesEje {
             ) || this.servicioConfig;
 
         if (!configTramos || !configCruces) {
-            this.throwError(
+            this.orquestador.throwError(
                 'Cruces Ejes',
                 'Error: No se encontraron las definiciones de tramosCalle o crucesPorIdCalle.'
             );
@@ -144,7 +144,7 @@ export class CrucesEje {
             ]);
 
             if (!resTramos.ok || !resCruces.ok) {
-                this.throwError(
+                this.orquestador.throwError(
                     'Cruces Ejes',
                     `Error en endpoints remotos (Status Tramos: ${resTramos.status}, Cruces: ${resCruces.status})`
                 );
@@ -540,7 +540,7 @@ export class CrucesEje {
 
         if (cantidadTramos > 0) {
             if (cantidadNodos > cantidadTramos + 1) {
-                integrityTexto =
+                integridadTexto =
                     '<span style="color: #c0392b; font-weight: bold;">⚠️ Fragmentado / Discontinuo</span>';
             } else if (cantidadNodos < cantidadTramos + 1) {
                 integridadTexto =

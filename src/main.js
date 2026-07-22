@@ -11,9 +11,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         const geovisorApp = new Orquestador();
         await geovisorApp.inicializar();
     } catch (error) {
-        this.error(
-            'Main', 
-            'No se pudo arrancar la aplicación: ', error
-        );
+        console.error('[Main] No se pudo arrancar la aplicación.', error);
     }
 });

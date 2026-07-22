@@ -49,15 +49,14 @@ export class DireccionesPoligono {
     }
 
     activar() {
-        this.orquestador.debug(
-            'Búsqueda Área', 'Herramienta ACTIVA.'
-        );
+        this.orquestador.debug('Búsqueda Área', 'Herramienta ACTIVA.');
 
         this.limpiarTodo();
         this.iniciarModoDibujo();
 
         this.orquestador.debug(
-            'Búsqueda Área', 'Herramienta lista para dibujar directamente en el mapa.'
+            'Búsqueda Área',
+            'Herramienta lista para dibujar directamente en el mapa.'
         );
     }
 
@@ -73,9 +72,7 @@ export class DireccionesPoligono {
         this.mapa.getContainer().style.cursor = 'crosshair';
         this.mapa.on('click', this.manejadorClickMapa);
 
-        this.orquestador.debug(
-            'Búsqueda Área', 'Modo dibujo habilitado.'
-        );
+        this.orquestador.debug('Búsqueda Área', 'Modo dibujo habilitado.');
     }
 
     detenerModoDibujo() {
@@ -84,9 +81,7 @@ export class DireccionesPoligono {
         this.mapa.getContainer().style.cursor = '';
         this.mapa.off('click', this.manejadorClickMapa);
 
-        this.orquestador.debug(
-            'Búsqueda Área', 'Modo dibujo detenido.'
-        );
+        this.orquestador.debug('Búsqueda Área', 'Modo dibujo detenido.');
     }
 
     alHacerClickMapa(evento) {
@@ -146,9 +141,9 @@ export class DireccionesPoligono {
     }
 
     async buscarEnPoligono(geojsonPoligono) {
-
         this.orquestador.debug(
-            'Búsqueda Área', 'Iniciando búsqueda de Direcciones dentro del polígono...'
+            'Búsqueda Área',
+            'Iniciando búsqueda de Direcciones dentro del polígono...'
         );
 
         document.body.style.cursor = 'wait';
@@ -156,7 +151,6 @@ export class DireccionesPoligono {
         const config = this.servicioConfig;
 
         if (!config || !config['url-base'] || !config['url-servicio']) {
-
             this.orquestador.throwError(
                 'Búsqueda Área',
                 'Error: La configuración del servicio no es válida.',
@@ -186,7 +180,8 @@ export class DireccionesPoligono {
         const tipoDirec = params.tipoDirec;
 
         this.orquestador.debug(
-            'Búsqueda Área', `Aplicando los parámetros: limit=${limit}, tipo=${tipoDirec}`
+            'Búsqueda Área',
+            `Aplicando los parámetros: limit=${limit}, tipo=${tipoDirec}`
         );
 
         url.searchParams.append('limit', limit);
@@ -195,7 +190,11 @@ export class DireccionesPoligono {
 
         try {
             const response = await fetch(url);
-            if (!response.ok) this.orquestador.throwError('Búsqueda Área', `HTTP ${response.status}`);
+            if (!response.ok)
+                this.orquestador.throwError(
+                    'Búsqueda Área',
+                    `HTTP ${response.status}`
+                );
 
             const data = await response.json();
 
@@ -214,7 +213,8 @@ export class DireccionesPoligono {
             }
         } catch (error) {
             this.orquestador.error(
-                'Búsqueda Área', 'Error al consultar Direcciones: ',
+                'Búsqueda Área',
+                'Error al consultar Direcciones: ',
                 error
             );
         } finally {
@@ -286,7 +286,9 @@ export class DireccionesPoligono {
                 `;
             }
 
-            const marcador = L.marker([itemBase.lat, itemBase.lng], { icon: iconoUsar })
+            const marcador = L.marker([itemBase.lat, itemBase.lng], {
+                icon: iconoUsar,
+            })
                 .bindPopup(cuerpoPopup)
                 .addTo(this.layerGroup);
 
@@ -294,16 +296,18 @@ export class DireccionesPoligono {
                 if (this.parent) {
                     this.parent.candidatoActual = {
                         punto: { lat: itemBase.lat, lng: itemBase.lng },
-                        datos: itemBase
+                        datos: itemBase,
                     };
-                    
+
                     this.orquestador.debug(
                         'DireccionesPoligono',
                         `Candidato activo actualizado desde marcador del polígono: ${itemBase.address || 'N/A'}`
                     );
 
-                    const electoralActivo = document.getElementById('mod-electoral')?.checked;
-                    const mapillaryActivo = document.getElementById('mod-mapillary')?.checked;
+                    const electoralActivo =
+                        document.getElementById('mod-electoral')?.checked;
+                    const mapillaryActivo =
+                        document.getElementById('mod-mapillary')?.checked;
 
                     if (electoralActivo && this.parent.serieElectoral) {
                         this.parent.activarHerramienta(
@@ -313,7 +317,10 @@ export class DireccionesPoligono {
                         );
                     }
                     if (mapillaryActivo && this.parent.mapillaryHerramienta) {
-                        this.parent.mapillaryHerramienta.mostrarEntorno(itemBase.lat, itemBase.lng);
+                        this.parent.mapillaryHerramienta.mostrarEntorno(
+                            itemBase.lat,
+                            itemBase.lng
+                        );
                     }
                 }
             });
@@ -339,7 +346,16 @@ export class DireccionesPoligono {
         this.capasMarcadores = [];
 
         this.orquestador.debug(
-            'Búsqueda Área', 'Estado y capas fueron limpiadas.'
+            'Búsqueda Área',
+            'Estado y capas fueron limpiadas.'
         );
+    }
+
+    destruir() {
+        this.limpiarTodo();
+
+        if (this.mapa && this.manejadorZoom) {
+            this.mapa.off('zoomend', this.manejadorZoom);
+        }
     }
 }

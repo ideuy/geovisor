@@ -79,7 +79,7 @@ export class ServicioDirecciones {
             const respuesta = await fetch(urlCompleta, { signal });
 
             if (!respuesta.ok) {
-                this.orquestadorthrowError(
+                this.orquestador.throwError(
                     'Servicio Direcciones',
                     `HTTP status error ${respuesta.status}`
                 );
@@ -142,8 +142,7 @@ export class ServicioDirecciones {
                 let valor = '';
 
                 if (c === 'nomvia') {
-                    valor = itemCandidato.nomVia || itemCandidato.nomvia;
-                    ('');
+                    valor = itemCandidato.nomVia || itemCandidato.nomvia || '';
                 } else if (c === 'portal') {
                     valor =
                         itemCandidato.portalNumber ||

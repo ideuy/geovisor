@@ -39,6 +39,7 @@ export class Direcciones {
         this.configApi = null;
         this.configCapaElectoral = null;
         this.configDirecUnica = null;
+        this.configMapillary = null;
 
         this.configReverse = null;
         this.configPoligono = null;
@@ -106,7 +107,9 @@ export class Direcciones {
             const mapaConfig = datosDirecciones.mapaDirecciones;
             const proveedores = datosMapasBase.mapasBase.proveedores;
             const proveedorSeleccionado = proveedores[mapaConfig.idMapaBase];
-            const configMapillary = datosAplicacion.mapillary;
+
+            this.configMapillary = datosAplicacion.mapillary || {};
+            const configMapillary = this.configMapillary;
 
             if (!proveedorSeleccionado) {
                 this.orquestador.throwError(
@@ -203,7 +206,7 @@ export class Direcciones {
             return this.elementoRaiz;
         } catch (error) {
             this.orquestador.error(
-                'Direcciones', 
+                'Direcciones',
                 'Falló la inicialización del Orquestador de Direcciones:',
                 error
             );
@@ -384,7 +387,7 @@ export class Direcciones {
                         const config =
                             mod.key === 'serieElectoral'
                                 ? this.configCapaElectoral
-                                : this.configApi?.mapillary || {};
+                                : this.configMapillary;
                         this.activarHerramienta(mod.key, config, mod.Clase);
                     } else {
                         if (this[mod.key]?.desactivar) {
@@ -484,22 +487,6 @@ export class Direcciones {
             contMapillary.style.marginTop = '10px';
             sidebar.appendChild(contMapillary);
         }
-    }
-
-    destruir() {
-        this.orquestador.debug(
-            'Direcciones',
-            'Iniciando destrucción de la vista Direcciones.'
-        );
-
-        if (this.gestorMapa) this.gestorMapa.destruir();
-        if (this.buscadorComponent) this.buscadorComponent.destruir();
-
-        this.elementoRaiz = null;
-        this.orquestador.debug(
-            'Direcciones',
-            'Recursos destruidos correctamente.'
-        );
     }
 
     manejarSeleccionBuscador(item) {
@@ -611,7 +598,11 @@ export class Direcciones {
                 );
             }
         } catch (error) {
-            this.orquestador.error('Direcciones', 'Error en consulta [direcUnica]: ', error);
+            this.orquestador.error(
+                'Direcciones',
+                'Error en consulta [direcUnica]: ',
+                error
+            );
         } finally {
             document.body.style.cursor = 'default';
         }
@@ -650,7 +641,7 @@ export class Direcciones {
                 this.graficarPuntoEnMapa(puntoEncontrado);
             }
         } catch (error) {
-            this.orquestador.error('Direcciones','[GeocodeFind]: ', error);
+            this.orquestador.error('Direcciones', '[GeocodeFind]: ', error);
         } finally {
             document.body.style.cursor = 'default';
         }
@@ -694,10 +685,9 @@ export class Direcciones {
                 'Direcciones',
                 'Reactivando automáticamente Mapillary para el nuevo punto.'
             );
-            const configMapillary = this.configApi?.mapillary || {};
             this.activarHerramienta(
                 'mapillaryHerramienta',
-                configMapillary,
+                this.configMapillary,
                 MapillaryHerramienta
             );
         }
@@ -886,7 +876,8 @@ export class Direcciones {
                             this.gestorMapa.mapa.removeControl(rc);
                         } catch (error) {
                             this.orquestador.warn(
-                                'Direcciones', '[Limpieza] No se pudo remover el control de ruteo: ',
+                                'Direcciones',
+                                '[Limpieza] No se pudo remover el control de ruteo: ',
                                 error
                             );
                         }
@@ -902,16 +893,56 @@ export class Direcciones {
                 this.direccionesPoligono.limpiarTodo();
 
             if (this.tramosEje?.limpiarTodo) this.tramosEje.limpiarTodo();
-            
+
             if (this.crucesEje && this.crucesEje.limpiarTodo)
                 this.crucesEje.limpiarTodo();
-            
-            if (this.busquedaRadio && this.busquedaRadio.limpiarTodo)
-                this.busquedaRadio.limpiarTodo();
-            
+
             if (!mantenerMapillary && this.mapillaryComponent?.desactivar) {
                 this.mapillaryComponent.desactivar();
             }
         }
+    }
+
+    destruir() {
+        this.orquestador.debug(
+            'Direcciones',
+            'Iniciando destrucción de la vista Direcciones.'
+        );
+
+        // 1. Apaga/limpia todas las herramientas exclusivas y modificadores
+        this.limpiarVistasOperativas();
+
+        // 2. direccionesPoligono registra un listener 'zoomend' hay que cerrarlo 
+        if (
+            this.direccionesPoligono &&
+            typeof this.direccionesPoligono.destruir === 'function'
+        ) {
+            this.direccionesPoligono.destruir();
+        }
+
+        // 3. Sub-componentes con recursos propios (mapa Leaflet, timers, etc.)
+        if (this.gestorMapa) this.gestorMapa.destruir();
+        if (this.buscadorComponent) this.buscadorComponent.destruir();
+
+        // 4. Anula referencias a herramientas e instancias
+        this.busquedaInversa = null;
+        this.direccionesPoligono = null;
+        this.tramosEje = null;
+        this.crucesEje = null;
+        this.serieElectoral = null;
+        this.mapillaryHerramienta = null;
+
+        this.gestorMapa = null;
+        this.buscadorComponent = null;
+        this.mapillaryComponent = null;
+        this.sidebarComponent = null;
+
+        this.candidatoActual = null;
+        this.elementoRaiz = null;
+
+        this.orquestador.debug(
+            'Direcciones',
+            'Recursos destruidos correctamente.'
+        );
     }
 }

@@ -122,62 +122,6 @@ export class InterfazSidebar {
         });
     }
 
-    agregarSeccion(titulo, contenidoHTML) {
-        if (!this.cuerpoDOM) return;
-
-        const div = document.createElement('div');
-        div.innerHTML = `<h3 class="barra-lateral__titulo barra-lateral__titulo--direcciones">${titulo}</h3><div>${contenidoHTML}</div>`;
-        this.cuerpoDOM.appendChild(div);
-    }
-
-    renderizarSeccionHerramientas(titulo, herramientas) {
-        if (!this.cuerpoDOM) return;
-
-        this.cuerpoDOM.insertAdjacentHTML(
-            'beforeend',
-            `
-            <div>
-                <p class="barra-lateral__titulo barra-lateral__titulo--herramientas">Herramientas Direcciones</p>
-                <div id="wrapper-herramientas" class="panel-botones-herramientas"></div>
-            </div>
-        `
-        );
-
-        const wrapper = this.cuerpoDOM.querySelector('#wrapper-herramientas');
-
-        if (Array.isArray(herramientas)) {
-            herramientas.forEach((herramienta) => {
-                const btn = document.createElement('button');
-                btn.className = 'boton boton--herramienta';
-                btn.innerHTML = herramienta.nombre;
-
-                if (herramienta.nombre === 'Búsqueda Inversa') {
-                    btn.title =
-                        'Búsqueda Inversa:\nHaga clic en el mapa para buscar la dirección más cercana.';
-                } else if (herramienta.nombre === 'Búsqueda en Radio') {
-                    btn.title =
-                        'Búsqueda en Radio:\nHaga clic en el mapa para buscar direcciones en un radio.';
-                } else if (herramienta.nombre === 'Búsqueda en Área') {
-                    btn.title =
-                        'Búsqueda en Área:\nDibuje un área con más de 3 clics en el mapa.';
-                } else if (herramienta.nombre === 'Tramos de Eje') {
-                    btn.title =
-                        'Tramos de Eje:\nDigite el nombre de una calle y localidad en el buscador.';
-                } else if (herramienta.nombre === 'Cruces de Eje') {
-                    btn.title =
-                        'Cruces de Eje:\nDigite el nombre de una calle y localidad en el buscador.';
-                }
-
-                btn.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    herramienta.callback();
-                });
-
-                wrapper.appendChild(btn);
-            });
-        }
-    }
-
     /**
      * Renderiza herramientas exclusivas en formato de grilla segmentada (Radio Buttons).
      * @param {string} titulo - Título de la sección.

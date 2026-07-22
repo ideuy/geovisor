@@ -126,7 +126,7 @@ export class TramosEje {
             const respuesta = await fetch(urlCompleta);
 
             if (!respuesta.ok)
-                this.orquestador.throw(
+                this.orquestador.throwError(
                     'Tramos Ejes',
                     `HTTP status ${respuesta.status}`
                 );

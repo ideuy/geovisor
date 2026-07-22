@@ -13,6 +13,7 @@ export class BuscadorDirecciones {
         this.selectLimiteDOM = null;
         this.debounceTimer = null;
         this.isSelecting = false;
+        this._handlerClickFuera = null;
     }
 
     inicializar() {
@@ -50,7 +51,7 @@ export class BuscadorDirecciones {
         }
 
         // Cierre al hacer clic fuera del contenedor
-        document.addEventListener('click', (evento) => {
+        this._handlerClickFuera = (evento) => {
             const contenedorBuscador = document.getElementById(
                 'buscador-direcciones-container'
             );
@@ -60,7 +61,9 @@ export class BuscadorDirecciones {
             ) {
                 this.limpiarSugerenciasDOM();
             }
-        });
+        };
+
+        document.addEventListener('click', this._handlerClickFuera);
     }
 
     manejarInput() {
@@ -257,5 +260,10 @@ export class BuscadorDirecciones {
     destruir() {
         clearTimeout(this.debounceTimer);
         this.limpiarSugerenciasDOM();
+
+        if (this._handlerClickFuera) {
+            document.removeEventListener('click', this._handlerClickFuera);
+            this._handlerClickFuera = null;
+        }
     }
 }

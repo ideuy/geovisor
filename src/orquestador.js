@@ -57,8 +57,7 @@ export class Orquestador {
             this.establecerInterfazGlobal();
 
             this.enrutarA(
-                this.configuracionGlobal.aplicacion['vista-cartografia'] ||
-                    'bienvenida'
+                this.configuracionGlobal.aplicacion['vista-inicial']
             );
         } catch (error) {
             this.error(
@@ -68,17 +67,6 @@ export class Orquestador {
             );
         }
     }
-
-    /*
-    registrarDebug(modulo, mensaje) {
-        if (this.propiedadLogger) {
-            console.log(
-                `%c[DEBUG][${modulo}] ${mensaje}`,
-                'color: #55B5E5; font-weight: bold;'
-            );
-        }
-    }
-    */
 
     /**
      * Método privado centralizado para procesar la salida por consola.
@@ -284,6 +272,13 @@ export class Orquestador {
                         'Error en recarga interna de datos:',
                         error
                     );
+
+                    if (
+                        typeof this.vistaControladorActual
+                            .notificarErrorRecarga === 'function'
+                    ) {
+                        this.vistaControladorActual.notificarErrorRecarga();
+                    }
                 }
                 break;
             }
@@ -407,7 +402,7 @@ export class Orquestador {
                 break;
 
             default:
-                this.error(`Orquestador', 'La ruta "${destino}" no existe.`);
+                this.error('Orquestador', `La ruta "${destino}" no existe.`);
         }
     }
 
