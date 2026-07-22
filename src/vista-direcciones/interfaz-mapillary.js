@@ -1,18 +1,21 @@
 /**
  * interfaz-mapillary.js
- * Gestiona el visor oficial de Mapillary usando mapillary-js (v4)
+ * Integración del visor interactivo de Mapillary leyendo window.mapillary
  */
 export class InterfazMapillary {
     constructor(contenedorId, orquestador, configuracion) {
         this.contenedor = document.getElementById(contenedorId);
         this.orquestador = orquestador;
 
-        this.config = configuracion;
+        // Carga de configuración desde aplicacion.json
+        this.config = configuracion || {};
         this.accessToken = this.config.token;
         this.urlBase = this.config['url-base'] || 'https://graph.mapillary.com';
+        this.radio = this.config.radio || 50;
+        this.limite = this.config.limite || 10;
 
         this.activo = false;
-        this.viewer = null; // Instancia del visor Mapillary
+        this.viewer = null;
     }
 
     activar(puntoActual) {
@@ -43,9 +46,12 @@ export class InterfazMapillary {
     destruirVisor() {
         if (this.viewer) {
             try {
-                this.viewer.remove(); // Libera los recursos WebGL y listeners
-            } catch (e) {
-                this.orquestador.warn('Mapillary','Error al remover el visor:', e);
+                this.viewer.remove(); // Libera el contexto WebGL de la memoria
+            } catch (error) {
+                this.orquestador.warn(
+                    'Mapillary', 'Error al remover la instancia del visor:',
+                    error
+                );
             }
             this.viewer = null;
         }
@@ -54,35 +60,59 @@ export class InterfazMapillary {
     async renderizar(punto) {
         if (!this.contenedor) return;
 
+        // 1. Detectar la librería global window.mapillary
+        const MapillaryLib =
+            window.mapillary || window.mapillaryjs || window.Mapillary;
+
+        if (!MapillaryLib || !MapillaryLib.Viewer) {
+            this.orquestador.error(
+                'Mapillary','No se encontró el constructor Viewer en window.mapillary.'
+            );
+            this.destruirVisor();
+            this.contenedor.innerHTML = `
+                <div class="mapillary-error-contenedor">
+                    <p class="mapillary-error-titulo">Error de Librería</p>
+                    <p class="mapillary-error-descripcion">No se pudo inicializar la librería de Mapillary.</p>
+                </div>`;
+            this.asegurarTirador();
+            return;
+        }
+
         this.activo = true;
         this.contenedor.style.display = 'block';
 
-        const lat = parseFloat(punto.lat).toFixed(6);
-        const lng = parseFloat(punto.lng).toFixed(6);
+        const lngFija = parseFloat(punto.lng).toFixed(6);
+        const latFija = parseFloat(punto.lat).toFixed(6);
 
-        // Consultamos la API de Mapillary usando 'near' para obtener el ID de la imagen cercana
-        const urlBusqueda = `${this.urlBase}/images?access_token=${this.accessToken}&fields=id&near=${lng},${lat}&limit=1`;
+        // 2. Consulta a Mapillary Graph API (lat, lng, radius)
+        const urlBusqueda = `${this.urlBase}/images?access_token=${this.accessToken}&fields=id,captured_at&lat=${latFija}&lng=${lngFija}&radius=${this.radio}&limit=${this.limite}`;
 
         try {
             const respuesta = await fetch(urlBusqueda);
-            if (!respuesta.ok) throw new Error(`HTTP ${respuesta.status}`);
+            if (!respuesta.ok) this.orquestador.throwError('Mapillary', `HTTP ${respuesta.status}`);
             const datos = await respuesta.json();
 
             if (datos.data && datos.data.length > 0) {
-                const idImagen = datos.data[0].id;
+                // Ordenar por la captura más reciente
+                const imagenesOrdenadas = datos.data.sort(
+                    (a, b) => (b.captured_at || 0) - (a.captured_at || 0)
+                );
+                const idImagenReciente = imagenesOrdenadas[0].id;
 
-                // Si el visor no existe, lo instanciamos
+                // 3. Instanciar o mover el visor WebGL
                 if (!this.viewer) {
-                    this.contenedor.innerHTML = ''; // Limpiamos mensajes previos
+                    this.contenedor.innerHTML = ''; // Limpiar mensajes de texto previos
 
-                    this.viewer = new mapillaryjs.Viewer({
+                    this.viewer = new MapillaryLib.Viewer({
                         accessToken: this.accessToken,
                         container: this.contenedor,
-                        imageId: idImagen,
+                        imageId: idImagenReciente,
+                        component: {
+                            cover: false, // Inicia la imagen directamente sin pantalla de portada
+                        },
                     });
                 } else {
-                    // Si ya existe la instancia, solo nos desplazamos a la nueva imagen
-                    this.viewer.moveTo(idImagen);
+                    this.viewer.moveTo(idImagenReciente);
                 }
 
                 this.asegurarTirador();
@@ -100,7 +130,7 @@ export class InterfazMapillary {
             this.contenedor.innerHTML = `
                 <div class="mapillary-error-contenedor">
                     <p class="mapillary-error-titulo">Error de Conexión</p>
-                    <p class="mapillary-error-descripcion">No pudimos cargar el visor de Mapillary.</p>
+                    <p class="mapillary-error-descripcion">No pudimos cargar las imágenes de Mapillary.</p>
                 </div>`;
             this.asegurarTirador();
         }
@@ -126,8 +156,8 @@ export class InterfazMapillary {
                 this.contenedor.style.height = `${nuevoAlto}px`;
                 this.contenedor.style.width = `${nuevoAncho}px`;
 
-                // Cuando se redimensiona el contenedor, mapillary-js requiere recalculado de canvas
-                if (this.viewer) {
+                // Reajustar el canvas WebGL al redimensionar la ventana flotante
+                if (this.viewer && typeof this.viewer.resize === 'function') {
                     this.viewer.resize();
                 }
 
