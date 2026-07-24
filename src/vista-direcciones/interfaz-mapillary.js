@@ -100,10 +100,10 @@ export class InterfazMapillary {
             );
             this.destruirVisor();
             this.mostrarContenido(`
-                <div class="mapillary-error-contenedor">
-                    <p class="mapillary-error-titulo">Error de Librería</p>
-                    <p class="mapillary-error-descripcion">No se pudo inicializar la librería de Mapillary.</p>
-                </div>`);
+            <div class="mapillary-error-contenedor">
+                <p class="mapillary-error-titulo">Error de Librería</p>
+                <p class="mapillary-error-descripcion">No se pudo inicializar la librería de Mapillary.</p>
+            </div>`);
             return;
         }
 
@@ -111,10 +111,14 @@ export class InterfazMapillary {
         this.contenedor.classList.add('direcciones-mapillary-flotante--activo');
         this.posicionarTirador();
 
+        // Extraer y validar coordenadas
         const latVal = punto.lat ?? punto.y ?? punto.geometry?.coordinates[1];
         const lngVal = punto.lng ?? punto.x ?? punto.geometry?.coordinates[0];
 
-        if (latVal === undefined || lngVal === undefined) {
+        const latNum = parseFloat(latVal);
+        const lngNum = parseFloat(lngVal);
+
+        if (isNaN(latNum) || isNaN(lngNum)) {
             this.orquestador.error(
                 'Mapillary',
                 'Coordenadas no válidas recibidas en el renderizador.',
@@ -123,11 +127,27 @@ export class InterfazMapillary {
             return;
         }
 
-        const lngFija = parseFloat(lngVal).toFixed(6);
-        const latFija = parseFloat(latVal).toFixed(6);
+        // 2. Calcular Bounding Box (bbox) necesario para Mapillary Graph API v4
+        const radioMetros = this.radio || 50;
+        const deltaLat = radioMetros / 111320;
+        const deltaLng =
+            radioMetros / (111320 * Math.cos(latNum * (Math.PI / 180)));
 
-        // 2. Consulta a Mapillary Graph API (lat, lng, radius)
-        const urlBusqueda = `${this.urlBase}/images?access_token=${this.accessToken}&fields=id,captured_at&lat=${latFija}&lng=${lngFija}&radius=${this.radio}&limit=${this.limite}`;
+        const minLng = (lngNum - deltaLng).toFixed(6);
+        const minLat = (latNum - deltaLat).toFixed(6);
+        const maxLng = (lngNum + deltaLng).toFixed(6);
+        const maxLat = (latNum + deltaLat).toFixed(6);
+
+        const bbox = `${minLng},${minLat},${maxLng},${maxLat}`;
+
+        this.mostrarContenido(`
+            <div class="mapillary-mensaje mapillary-cargando">
+                <span>Cargando entorno urbano...</span>
+            </div>
+        `);
+
+        // Consulta usando 'bbox' en lugar de lat/lng/radius directos
+        const urlBusqueda = `${this.urlBase}/images?access_token=${this.accessToken}&fields=id,captured_at&bbox=${bbox}&limit=${this.limite}`;
 
         try {
             const respuesta = await fetch(urlBusqueda);
@@ -164,18 +184,18 @@ export class InterfazMapillary {
             } else {
                 this.destruirVisor();
                 this.mostrarContenido(`
-                    <div class="mapillary-mensaje">
-                        No hay cobertura de fotos en esta ubicación.
-                    </div>`);
+                <div class="mapillary-mensaje">
+                    No hay cobertura de fotos en esta ubicación.
+                </div>`);
             }
         } catch (error) {
             this.orquestador.error('Mapillary', 'Error: ', error);
             this.destruirVisor();
             this.mostrarContenido(`
-                <div class="mapillary-error-contenedor">
-                    <p class="mapillary-error-titulo">Error de Conexión</p>
-                    <p class="mapillary-error-descripcion">No pudimos cargar las imágenes de Mapillary.</p>
-                </div>`);
+            <div class="mapillary-error-contenedor">
+                <p class="mapillary-error-titulo">Error de Conexión</p>
+                <p class="mapillary-error-descripcion">No pudimos cargar las imágenes de Mapillary.</p>
+            </div>`);
         }
     }
 

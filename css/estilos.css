@@ -1792,6 +1792,16 @@ position: absolute;
     background: var(--color-primario-hover, #005f82);
 }
 
+.mapillary-cargando {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    font-size: 14px;
+    color: var(--color-atenuado);
+    font-weight: 500;
+}
+
 /* ==========================================================================
    [17.2] TABLA DE ATRIBUTOS
    ========================================================================== */
