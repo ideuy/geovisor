@@ -13,6 +13,7 @@ export class GestorMapa {
         this.capaBusqueda = null;
         this.capaPoligonoElectoral = null;
         this.capasOperativasActivas = {};
+        this.marcadorActivo = null;
     }
 
     inicializar(idContenedor, parametros, proveedor) {
@@ -130,6 +131,8 @@ export class GestorMapa {
         });
 
         this.capaBusqueda.addLayer(marcador);
+        this.marcadorActivo = marcador;
+
         this.mapa.setView(coordenadas, nivelZoom);
         marcador.openPopup();
     }
@@ -167,7 +170,7 @@ export class GestorMapa {
     }
 
     /**
-     * Actualiza el contenido HTML del Popup del pin que esté actualmente abierto/graficado.
+     * Actualiza el contenido HTML del Popup del marcador de búsqueda activo.
      * @param {string} nuevoHtmlPopup - Nueva cadena HTML para el popup.
      */
     actualizarPopupMarcador(nuevoHtmlPopup) {
@@ -176,21 +179,19 @@ export class GestorMapa {
             'Actualizando contenido del Popup actual.'
         );
 
-        const popupActivo = this.mapa._popup;
-        if (popupActivo && popupActivo.isOpen()) {
-            popupActivo.setContent(nuevoHtmlPopup);
-            popupActivo.update();
-        }
+        if (!this.marcadorActivo) return;
 
-        this.capaBusqueda.eachLayer((layer) => {
-            if (layer instanceof L.Marker) {
-                layer.setPopupContent(nuevoHtmlPopup);
-            }
-        });
+        this.marcadorActivo.setPopupContent(nuevoHtmlPopup);
+
+        const popup = this.marcadorActivo.getPopup();
+        if (popup && popup.isOpen()) {
+            popup.update();
+        }
     }
 
     limpiarCapaBusqueda() {
         if (this.capaBusqueda) this.capaBusqueda.clearLayers();
+        this.marcadorActivo = null;
     }
 
     limpiarCapaPoligonos() {

@@ -3,10 +3,6 @@ import { ProcesadorAnalitico } from './procesador-analitico.js';
 import { ControladorMapa } from './controlador-mapa.js';
 import { ControladorGraficos } from './controlador-graficos.js';
 
-/**
- * Controlador Principal de la Vista Tablero.
- * Encargado de coordinar sub-controladores y reaccionar a los eventos de la UI.
- */
 export class Tablero {
     constructor(orquestador, configTablero, datosEstandarizados) {
         this.orquestador = orquestador;
@@ -17,11 +13,12 @@ export class Tablero {
         this.procesador.setDatosYConfiguracion(this.datos, this.config);
 
         this.mapaCtrl = null;
+        this.datosActivos = this.datos;
         this.graficosCtrl = null;
         this.nodoRaiz = null;
         this.tablerosHermanos = [];
-
-        this.listaTablerosCached = null;
+        this.anioSeleccionado = null;
+        this.datosActivos = [];
     }
 
     async inicializar() {
@@ -34,12 +31,25 @@ export class Tablero {
             elementoTitulo.textContent = this.config.titulo;
         }
 
+        // Mostrar spinner al inicio
+        this.mostrarSpinner(true);
+
         this.esperarContenedorListo().then(async () => {
-            this.inicializarSubComponentes();
-            this.poblarComboboxDimensiones();
-            await this.poblarComboboxTableros();
-            this.vincularEventosUI();
-            this.actualizarFlujoAnalitico(this.config.dimensionPrincipal.campo);
+            try {
+                // 1. Esperar a que el mapa cargue el GeoJSON por completo
+                await this.inicializarSubComponentes();
+                this.poblarComboboxDimensiones();
+                await this.poblarComboboxTableros();
+                this.vincularEventosUI();
+                this.actualizarFlujoAnalitico(
+                    this.config.dimensionPrincipal.campo
+                );
+            } catch (error) {
+                console.error('Error al inicializar el tablero:', error);
+            } finally {
+                // 2. Ocultar el spinner cuando todo está dibujado
+                this.mostrarSpinner(false);
+            }
         });
 
         this.orquestador.info(
@@ -48,6 +58,50 @@ export class Tablero {
         );
 
         return this.nodoRaiz;
+    }
+
+    async inicializarSubComponentes() {
+        this.mapaCtrl = new ControladorMapa('mapa-leaflet');
+        this.mapaCtrl.inicializar();
+        this.mapaCtrl.redimensionar();
+
+        const idMapaBase = this.config.idMapaBase || null;
+        const mapasBaseJson = this.orquestador.configuracionMapasBase;
+
+        this.mapaCtrl.cambiarMapaBase(idMapaBase, mapasBaseJson);
+
+        this.datosActivos = this.datos;
+
+        // Importante: hacer await del renderizado del mapa
+        await this.mapaCtrl.actualizarCapas(
+            this.datosActivos,
+            this.config,
+            this.config.dimensionPrincipal.campo
+        );
+
+        this.graficosCtrl = new ControladorGraficos(
+            'grafico-barras',
+            'grafico-pastel'
+        );
+    }
+
+    mostrarSpinner(mostrar) {
+        const loader = this.nodoRaiz
+            ? this.nodoRaiz.querySelector('#tablero-loader')
+            : null;
+        if (!loader) return;
+
+        if (mostrar) {
+            loader.classList.remove('oculto');
+            loader.style.display = 'flex';
+        } else {
+            loader.classList.add('oculto');
+            setTimeout(() => {
+                if (loader.classList.contains('oculto')) {
+                    loader.style.display = 'none';
+                }
+            }, 300);
+        }
     }
 
     esperarContenedorListo() {
@@ -98,37 +152,9 @@ export class Tablero {
             esperarNodoEnDom();
 
             setTimeout(() => {
-                if (!resuelto) {
-                    this.orquestador.warn(
-                        'Tablero',
-                        'El contenedor del mapa no reportó un tamaño válido a tiempo; se continúa de todas formas.'
-                    );
-                    finalizar();
-                }
+                if (!resuelto) finalizar();
             }, 2000);
         });
-    }
-
-    inicializarSubComponentes() {
-        this.mapaCtrl = new ControladorMapa('mapa-leaflet');
-        this.mapaCtrl.inicializar();
-        this.mapaCtrl.redimensionar();
-
-        const idMapaBase = this.config.idMapaBase || null;
-        const mapasBaseJson = this.orquestador.configuracionMapasBase;
-
-        this.mapaCtrl.cambiarMapaBase(idMapaBase, mapasBaseJson);
-
-        this.mapaCtrl.actualizarCapas(
-            this.datos,
-            this.config,
-            this.config.dimensionPrincipal.campo
-        );
-
-        this.graficosCtrl = new ControladorGraficos(
-            'grafico-barras',
-            'grafico-pastel'
-        );
     }
 
     async poblarComboboxTableros() {
@@ -138,101 +164,56 @@ export class Tablero {
         if (!this.tablerosHermanos || this.tablerosHermanos.length === 0) {
             try {
                 const respuesta = await fetch('./config/tableros.json');
-                if (!respuesta.ok)
-                    this.orquestador.throwError(
-                        'Tablero',
-                        'No se pudo leer el archivo de tableros.'
-                    );
-
+                if (!respuesta.ok) return;
                 const configGeneral = await respuesta.json();
-                const todosLosTableros = configGeneral.tableros || [];
-
-                this.tablerosHermanos = todosLosTableros.filter(
+                this.tablerosHermanos = (configGeneral.tableros || []).filter(
                     (t) => t.idGrupo === this.config.idGrupo
                 );
             } catch (error) {
-                this.orquestador.error(
-                    'Tablero',
-                    'Error al cargar series:',
-                    error
-                );
-                cmb.innerHTML =
-                    '<option value="">Error al cargar series</option>';
+                console.error('Error al cargar tableros:', error);
                 return;
             }
         }
+
         cmb.innerHTML = '';
+        const anosDisponibles = this.extraerAnosUnicos(this.datos);
+
         this.tablerosHermanos.forEach((tablero) => {
-            const opcion = document.createElement('option');
-            opcion.value = tablero.idTablero;
-            opcion.textContent = tablero.nombre || tablero.titulo;
-
-            if (tablero.idTablero === this.config.idTablero) {
-                opcion.selected = true;
+            const opcionPrincipal = document.createElement('option');
+            opcionPrincipal.value = tablero.idTablero;
+            opcionPrincipal.textContent = `${tablero.nombre || tablero.titulo} (Todos los años)`;
+            if (
+                tablero.idTablero === this.config.idTablero &&
+                !this.anioSeleccionado
+            ) {
+                opcionPrincipal.selected = true;
             }
-            cmb.appendChild(opcion);
+            cmb.appendChild(opcionPrincipal);
+
+            if (anosDisponibles.length > 0) {
+                anosDisponibles.sort().forEach((anio) => {
+                    const opcionAnio = document.createElement('option');
+                    opcionAnio.value = `${tablero.idTablero}__ANIO__${anio}`;
+                    opcionAnio.textContent = ` Año ${anio}`;
+                    if (this.anioSeleccionado === anio) {
+                        opcionAnio.selected = true;
+                    }
+                    cmb.appendChild(opcionAnio);
+                });
+            }
         });
     }
 
-    recargarDatosMismoTablero(nuevaConfig, nuevosDatos) {
-        this.orquestador.debug(
-            'Tablero',
-            `Recarga silenciosa de datos: ${nuevaConfig.idTablero}`
-        );
-
-        this.config = nuevaConfig;
-        this.datos = nuevosDatos || [];
-        this.procesador.setDatosYConfiguracion(this.datos, this.config);
-
-        const elementoTitulo = this.nodoRaiz.querySelector('#mapa-titulo');
-        if (elementoTitulo) {
-            elementoTitulo.textContent = this.config.titulo || '';
-        }
-
-        const cmbTableros = this.nodoRaiz.querySelector('#cmb-tableros');
-        if (cmbTableros && cmbTableros.value !== this.config.idTablero) {
-            cmbTableros.value = this.config.idTablero;
-        }
-
-        this.poblarComboboxDimensiones();
-
-        const cmbDimensiones = this.nodoRaiz.querySelector('#cmb-dimensiones');
-        const campoDimension = cmbDimensiones
-            ? cmbDimensiones.value
-            : this.config.dimensionPrincipal.campo;
-
-        this.mapaCtrl.actualizarCapas(this.datos, this.config, campoDimension);
-        this.actualizarFlujoAnalitico(campoDimension);
-
-        this._habilitarComboTableros();
-    }
-
-    notificarErrorRecarga() {
-        const cmbTableros = this.nodoRaiz.querySelector('#cmb-tableros');
-        if (cmbTableros) {
-            cmbTableros.value = this.config.idTablero;
-        }
-        this._habilitarComboTableros();
-    }
-
-    _habilitarComboTableros() {
-        const cmbTableros = this.nodoRaiz.querySelector('#cmb-tableros');
-        if (cmbTableros) {
-            cmbTableros.disabled = false;
-        }
-    }
-
-    poblarComboboxDimensiones() {
-        const cmb = this.nodoRaiz.querySelector('#cmb-dimensiones');
-        if (!cmb) return;
-        cmb.innerHTML = '';
-        const dimensiones = this.procesador.obtenerDimensionesDisponibles();
-        dimensiones.forEach((dim) => {
-            const opcion = document.createElement('option');
-            opcion.value = dim.campo;
-            opcion.textContent = dim.titulo;
-            cmb.appendChild(opcion);
+    extraerAnosUnicos(registros) {
+        const anos = new Set();
+        registros.forEach((r) => {
+            const mesAudi = r.mes_primera_audi || r.MES_PRIMERA_AUDI || '';
+            if (mesAudi.length >= 4) {
+                const y = mesAudi.substring(0, 4);
+                if (!isNaN(parseInt(y))) anos.add(y);
+            }
         });
+        return Array.from(anos);
     }
 
     vincularEventosUI() {
@@ -245,45 +226,92 @@ export class Tablero {
 
         const cmbTableros = this.nodoRaiz.querySelector('#cmb-tableros');
         if (cmbTableros) {
-            cmbTableros.addEventListener('change', (e) => {
-                const idSeleccionado = e.target.value;
-                const tableroDestino = this.tablerosHermanos.find(
-                    (t) => t.idTablero === idSeleccionado
-                );
-
-                if (!tableroDestino) return;
-
-                cmbTableros.disabled = true;
-
-                this.orquestador.notificar(
-                    'CAMBIO_TABLERO_INTERNO',
-                    tableroDestino
-                );
+            cmbTableros.addEventListener('change', async (e) => {
+                const valSeleccionado = e.target.value;
+                if (valSeleccionado.includes('__ANIO__')) {
+                    const [idTablero, anio] = valSeleccionado.split('__ANIO__');
+                    await this.filtrarPorAnio(anio);
+                } else {
+                    await this.filtrarPorAnio(null);
+                }
             });
         }
 
-        // Eventos de tipo de visualización geográfica
-        const selectoresGeo = this.nodoRaiz.querySelectorAll(
-            'input[name="tipo-geo"]'
+        const radiosVista = this.nodoRaiz.querySelectorAll(
+            '.tablero__radio-input'
         );
-        selectoresGeo.forEach((radio) => {
-            radio.addEventListener('change', (e) => {
-                const modoSeleccionado = e.target.value;
-                const selectDimension =
-                    this.nodoRaiz.querySelector('#cmb-dimensiones');
-                const cmbActual = selectDimension
-                    ? selectDimension.value
-                    : this.config.dimensionPrincipal.campo;
+        radiosVista.forEach((radio) => {
+            radio.addEventListener('change', async (e) => {
+                if (!e.target.checked) return;
 
-                this.config.visualizacion = modoSeleccionado;
+                this.config.visualizacion = e.target.value;
+                const dimActual = cmb?.value || this.config.dimensionPrincipal?.campo;
+
+                this.mostrarSpinner(true);
+                await new Promise((resolve) => setTimeout(resolve, 50));
+
                 if (this.mapaCtrl) {
-                    this.mapaCtrl.actualizarCapas(
-                        this.datos,
+                    const datosParaRenderizar =
+                        this.datosActivos && this.datosActivos.length > 0
+                            ? this.datosActivos
+                            : this.datos;
+
+                    await this.mapaCtrl.actualizarCapas(
+                        datosParaRenderizar,
                         this.config,
-                        cmbActual
+                        dimActual
                     );
                 }
+
+                this.mostrarSpinner(false);
             });
+        });
+    }
+
+    async filtrarPorAnio(anio) {
+        this.mostrarSpinner(true);
+
+        // Dar un frame al navegador para renderizar el spinner antes de congelar el hilo con los datos
+        await new Promise((resolve) => setTimeout(resolve, 50));
+
+        this.anioSeleccionado = anio;
+        let datosFiltrados = this.datos;
+
+        if (anio) {
+            datosFiltrados = this.datos.filter((r) => {
+                const mesAudi = r.mes_primera_audi || r.MES_PRIMERA_AUDI || '';
+                return mesAudi.startsWith(anio);
+            });
+        }
+
+        this.datosActivos = datosFiltrados;
+        this.procesador.setDatosYConfiguracion(datosFiltrados, this.config);
+
+        const cmbDimensiones = this.nodoRaiz.querySelector('#cmb-dimensiones');
+        const dimActual = cmbDimensiones
+            ? cmbDimensiones.value
+            : this.config.dimensionPrincipal.campo;
+
+        await this.mapaCtrl.actualizarCapas(
+            datosFiltrados,
+            this.config,
+            dimActual
+        );
+        this.actualizarFlujoAnalitico(dimActual);
+
+        this.mostrarSpinner(false);
+    }
+
+    poblarComboboxDimensiones() {
+        const cmb = this.nodoRaiz.querySelector('#cmb-dimensiones');
+        if (!cmb) return;
+        cmb.innerHTML = '';
+        const dimensiones = this.procesador.obtenerDimensionesDisponibles();
+        dimensiones.forEach((dim) => {
+            const opcion = document.createElement('option');
+            opcion.value = dim.campo;
+            opcion.textContent = dim.titulo;
+            cmb.appendChild(opcion);
         });
     }
 

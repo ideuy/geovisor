@@ -25,6 +25,17 @@
                     "descripcion": "Eventos de incendios forestales registrados por SINAE."
                 }
             }
-        }
+        },
+        "fiscalia": {
+            "titulo": "Fiscalía General de la Nación",
+            "descripcion": "Datos sobre imputaciones, condenas y procesos penales.",
+            "rutaDatos": "./datos/fiscalia/",
+            "grupos": {
+                "imputaciones_condenas": {
+                    "titulo": "Imputaciones y Condenas",
+                    "descripcion": "Serie histórica departamental de delitos, procesos y situaciones procesales."
+                    }
+                }
+        }        
     }
 }

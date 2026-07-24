@@ -23,6 +23,17 @@
             "visibleInicial": false
         },
         {
+            "id": "asentamientos_rnai",
+            "nombre": "Asentamientos (DINISU)",
+            "url": "https://mapas.ide.uy/geoserver-vectorial/ideuy/asentamientos_rnai/ows",
+            "capa": "ideuy:asentamientos_rnai",
+            "tipo": "poligono",
+            "version": "1.3.0",
+            "requiereCrs3857": true,
+            "atribucion": "© IDE Uruguay",
+            "visibleInicial": false
+        },
+        {
             "id": "secciones_judiciales",
             "nombre": "Secciones Judiciales (SCJ)",
             "url": "https://mapas.ide.uy/geoserver-vectorial/ideuy/secciones_judiciales/ows",
@@ -63,6 +74,28 @@
             "url": "https://mapas.ide.uy/geoserver-vectorial/ows",
             "capa": "ideuy:ejes_viales_ide_",
             "tipo": "linea",
+            "version": "1.3.0",
+            "requiereCrs3857": true,
+            "atribucion": "© IDE Uruguay",
+            "visibleInicial": false
+        },
+        {
+            "id": "hidro_c_linea",
+            "nombre": "Hidrografía - líneas (IDE)",
+            "url": "https://mapas.ide.uy/geoserver-vectorial/ows",
+            "capa": "hidrografia:hidro_c_linea",
+            "tipo": "linea",
+            "version": "1.3.0",
+            "requiereCrs3857": true,
+            "atribucion": "© IDE Uruguay",
+            "visibleInicial": false
+        },
+        {
+            "id": "hidro_c_polig",
+            "nombre": "Hidrografía - polígonos (IDE)",
+            "url": "https://mapas.ide.uy/geoserver-vectorial/ows",
+            "capa": "hidrografia:hidro_c_polig",
+            "tipo": "poligono",
             "version": "1.3.0",
             "requiereCrs3857": true,
             "atribucion": "© IDE Uruguay",

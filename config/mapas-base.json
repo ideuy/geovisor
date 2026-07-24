@@ -15,13 +15,13 @@
         "proveedores": {
             "ide_mapa_base": {
             "nombre": "IDE Uruguay (Mapa Base)",
-            "activo": true,
+            "activo": false,
             "url": "https://mapas.ide.uy/geoserver-vectorial/gwc/service/wmts/rest/capa_base_ideuy_ideuy/default/EPSG:3857/EPSG:3857:{z}/{y}/{x}?format=image/png",
             "opciones": { "maxZoom": 22, "maxNativeZoom": 18, "attribution": "© IDE Uruguay", "tileSize": 256}
             },
             "ide_nacional": {
             "nombre": "IDE (Nacional 2017-2018)",
-            "activo": false,
+            "activo": true,
             "url": "https://mapas.ide.uy/geoserver-raster/gwc/service/wmts?service=WMTS&request=GetTile&version=1.0.0&layer=ortofotos:ortofoto_nacional&style=raster&tilematrixset=EPSG:3857&format=image/png&height=256&width=256&tilematrix=EPSG:3857:{z}&tilerow={y}&tilecol={x}",
             "opciones": { "maxZoom": 22, "maxNativeZoom": 18, "attribution": "© IDE Uruguay"}
             },

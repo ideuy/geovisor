@@ -3,20 +3,29 @@
  * Gestiona el panel lateral, colapso y herramientas.
  */
 export class InterfazSidebar {
-    constructor(sidebarId, toggleBtnId, orquestador) {
+    /**
+     * @param {string} sidebarId
+     * @param {string} toggleBtnId
+     * @param {Orquestador} orquestador
+     * @param {Function} [invalidarMapaCallback] Función sin argumentos que
+     *   invalida el tamaño del mapa Leaflet activo. Se recibe como callback
+     *   (en vez de una referencia directa al mapa) porque al construirse este
+     *   componente el mapa todavía no existe.
+     */
+    constructor(
+        sidebarId,
+        toggleBtnId,
+        orquestador,
+        invalidarMapaCallback = null
+    ) {
         this.sidebarDOM = document.getElementById(sidebarId);
         this.btnToggleDOM = document.getElementById(toggleBtnId);
         this.orquestador = orquestador;
+        this.invalidarMapaCallback = invalidarMapaCallback;
 
         this.cuerpoDOM = this.sidebarDOM
             ? this.sidebarDOM.querySelector('#contenedor-dinamico-sidebar')
             : null;
-
-        if (!this.cuerpoDOM) {
-            console.warn(
-                '[ADVERTENCIA] InterfazSidebar: No se encontró #contenedor-dinamico-sidebar dentro del sidebar.'
-            );
-        }
     }
 
     inicializar(proveedoresMapaBase, idMapaBaseActual, callbackCambioMapa) {
@@ -24,11 +33,9 @@ export class InterfazSidebar {
 
         this.btnToggleDOM.addEventListener('click', () => {
             this.sidebarDOM.classList.toggle('barra-lateral--colapsado');
-            setTimeout(() => {
-                if (this.orquestador && this.orquestador.mapaDirecciones) { 
-                    this.orquestador.mapaDirecciones.invalidateSize({ animate: true });
-                }
-            }, 400);
+            if (typeof this.invalidarMapaCallback === 'function') {
+                this.invalidarMapaCallback();
+            }
         });
 
         this._renderizarSeccionMapasBase(
@@ -134,7 +141,7 @@ export class InterfazSidebar {
         const grid = document.createElement('div');
         grid.className = 'control-segmentado';
 
-        herramientas.forEach(h => {
+        herramientas.forEach((h) => {
             const item = document.createElement('div');
             item.className = 'control-segmentado__item';
             item.innerHTML = `
@@ -163,7 +170,7 @@ export class InterfazSidebar {
         const panel = document.createElement('div');
         panel.className = 'panel-interruptores';
 
-        modificadores.forEach(m => {
+        modificadores.forEach((m) => {
             const wrapper = document.createElement('label');
             wrapper.className = 'interruptor';
             wrapper.innerHTML = `

@@ -239,6 +239,55 @@
                     "titulo": "Rol"
                 }
             ]
+        },
+        {
+            "idTablero": "imputaciones_condenas_tablero",
+            "idTematica": "fiscalia",
+            "idGrupo": "imputaciones_condenas",
+            "ordenVisual": 1,
+            "nombre": "2019 - 2025",
+            "idMapaBase": "carto_claro",
+            "titulo": "FISCALIA - Imputaciones y Condenas 2019 - 2025",
+            "descripcion": "Casos sobre imputaciones, condenas y procesos penales.",
+            "formato": "csv",
+            "datos": "imputaciones-y-condenas-a-personas.csv",
+            "separadorCsv": ";",
+            "tipoCapaCartografica": "poligonos_coropletas",
+            "capaGeografica": {
+                "fuente": "./datos/geo/departamentos.geojson",
+                "campoClaveGeoJSON": "nombre",
+                "campoClaveCSV": "depto_hechos"
+            },
+            "dimensionPrincipal": {
+                "campo": "depto_hechos",
+                "titulo": "Departamento"
+            },
+            "dimensionesSecundarias": [
+                {
+                    "campo": "delitos_agrupados",
+                    "titulo": "Delitos"
+                },
+                {
+                    "campo": "situación_procesal",
+                    "titulo": "Situación"
+                },
+                {
+                    "campo": "sexo_persona",
+                    "titulo": "Sexo"
+                },
+                {
+                    "campo": "edad_tramos",
+                    "titulo": "Edad"
+                },
+                {
+                    "campo": "delito_imputado",
+                    "titulo": "Imputación"
+                },
+                {
+                    "campo": "mes_primera_audi",
+                    "titulo": "Mes / Año Audiencia"
+                }
+            ]
         }
     ]
 }

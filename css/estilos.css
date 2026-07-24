@@ -404,7 +404,7 @@ body {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
     gap: 24px;
-    max-width: 1200px;
+    max-width: 1600px;
     margin: 0 auto;
 }
 
@@ -491,7 +491,8 @@ position: absolute;
     transition: left 0.4s cubic-bezier(0.25, 1, 0.5, 1), width 0.4s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
-.contenedor-vista:has(.barra-lateral:not(.barra-lateral--colapsado)) .mapa-contenedor {
+.contenedor-vista:has(.barra-lateral:not(.barra-lateral--colapsado)) .mapa-contenedor,
+.contenedor-vista.sidebar-colapsado-fallback .mapa-contenedor {
     left: 320px;
     width: calc(100% - 320px);
 }
@@ -600,11 +601,11 @@ position: absolute;
 
 .interruptor__slider {
     position: relative;
-    width: 36px;
-    height: 20px;
+    width: 35px;
+    height: 18px;
     background-color: var(--color-borde);
     border-radius: 20px;
-    margin-right: 12px;
+    margin-right: 10px;
     flex-shrink: 0;
     transition: background-color 0.25s ease;
 }
@@ -612,10 +613,10 @@ position: absolute;
 .interruptor__slider::before {
     content: "";
     position: absolute;
-    height: 14px;
-    width: 14px;
+    height: 13px;
+    width: 13px;
     left: 3px;
-    top: 3px;
+    top: 2.5px;
     background-color: var(--color-superficie);
     border-radius: 50%;
     transition: transform 0.25s cubic-bezier(0.25, 1, 0.5, 1);
@@ -796,6 +797,7 @@ position: absolute;
     padding: 8px 10px;
     margin: 0;
     border-radius: 6px;
+    height: 60px;
     transition: background-color 0.2s ease, border-color 0.2s ease;
     background-color: var(--color-superficie);
     cursor: pointer;
@@ -1146,6 +1148,48 @@ position: absolute;
     background-color: rgba(85, 181, 229, 0.05);
 }
 
+
+.tablero__loader-overlay {
+    position: absolute;
+    top: 0; 
+    left: 0; 
+    width: 100%; 
+    height: 100%;
+    background: rgba(255, 255, 255, 0.90);
+    backdrop-filter: blur(4px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.tablero__loader-overlay.oculto {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    display: none !important;
+}
+
+.tablero__spinner {
+    width: 50px;
+    height: 50px;
+    border: 5px solid #E2E8F0;
+    border-top-color: #1E40AF;
+    border-radius: 50%;
+    animation: girar 0.8s linear infinite;
+}
+.tablero__loader-texto {
+    margin-top: 15px;
+    font-weight: 600;
+    font-size: 15px;
+    color: #1E293B;
+}
+@keyframes girar {
+    to { transform: rotate(360deg); }
+}
+
 /* ==========================================================================
    [16] VISTA DIRECCIONES
    ========================================================================== */
@@ -1162,12 +1206,14 @@ position: absolute;
     width: 100%; 
 }
 
-.contenedor-vista-direcciones:has(.barra-lateral:not(.barra-lateral--colapsado)) #mapa-direcciones-leaflet {
+.contenedor-vista-direcciones:has(.barra-lateral:not(.barra-lateral--colapsado)) #mapa-direcciones-leaflet,
+.contenedor-vista-direcciones.sidebar-colapsado-fallback #mapa-direcciones-leaflet {
     left: 320px;
     width: calc(100% - 320px);
 }
 
-.contenedor-vista-direcciones:has(.barra-lateral:not(.barra-lateral--colapsado)) .buscador-flotante {
+.contenedor-vista-direcciones:has(.barra-lateral:not(.barra-lateral--colapsado)) .buscador-flotante,
+.contenedor-vista-direcciones.sidebar-colapsado-fallback .buscador-flotante {
     left: calc(50% + 160px);
 }
 
@@ -1510,6 +1556,12 @@ position: absolute;
     border-radius: 8px;
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
     transition: border-color 0.2s ease;
+    overflow: visible;
+    isolation: isolate;
+}
+
+.direcciones-mapillary-flotante--activo {
+    display: block;
 }
 
 /* Cuerpo interno que aísla el contenido dinámico del tirador */
@@ -1518,10 +1570,14 @@ position: absolute;
     height: 100%;
     overflow: hidden;
     border-radius: 8px;
-    position: relative;
+    position: absolute;
+    inset: 0;
     background: #000;
     font-family: var(--fuente-base, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif);
     user-select: none;
+    z-index: 1;
+    pointer-events: auto;
+    isolation: isolate;
 }
 
 /* Tirador personalizado de redimensionamiento (Abajo a la Izquierda) */
@@ -1529,30 +1585,54 @@ position: absolute;
     position: absolute;
     left: 0;
     bottom: 0;
-    width: 20px;
-    height: 20px;
-    cursor: sw-resize;
-    z-index: 1600;
+    width: 22px;
+    height: 22px;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    cursor: grabbing;
     user-select: none;
-    background: transparent;
+    pointer-events: auto !important;
+    z-index: 10;
+    background: var(--color-fondo);
+    border-top-right-radius: 12px;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    box-shadow:
+        0 2px 8px rgba(0,0,0,.10),
+        0 1px 2px rgba(0,0,0,.06);
+    transition:
+        background .15s ease,
+        box-shadow .15s ease,
+        transform .15s ease;
 }
 
-/* Pequeña escuadra decorativa del tirador */
 .mapillary-tirador-ai::after {
-    content: '';
-    position: absolute;
-    left: 4px;
-    bottom: 4px;
-    width: 7px;
-    height: 7px;
-    border-left: 2px solid rgba(255, 255, 255, 0.5);
-    border-bottom: 2px solid rgba(255, 255, 255, 0.5);
-    transition: border-color 0.2s ease;
+    content: "↙";
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--color-atenuado);
+    line-height: 1;
+    transition: color .15s;
 }
 
 .mapillary-tirador-ai:hover::after {
-    border-left-color: #ffffff;
-    border-bottom-color: #ffffff;
+    color: var(--color-destacado);
+}
+
+.mapillary-tirador-ai--visible {
+    display: flex;
+}
+
+.mapillary-tirador-ai:hover {
+    background: var(--color-fondo);
+    transform: scale(1.05);
+    box-shadow:
+        0 4px 14px rgba(0,0,0,.15),
+        0 2px 4px rgba(0,0,0,.08);
+}
+
+.mapillary-tirador-ai:active {
+    transform: scale(.96);
 }
 
 /* Estructura interna de imágenes */
@@ -1962,12 +2042,15 @@ position: absolute;
     }
 
     .contenedor-vista:has(.barra-lateral:not(.barra-lateral--colapsado)) .mapa-contenedor,
-    .contenedor-vista-direcciones:has(.barra-lateral:not(.barra-lateral--colapsado)) #mapa-direcciones-leaflet {
+    .contenedor-vista-direcciones:has(.barra-lateral:not(.barra-lateral--colapsado)) #mapa-direcciones-leaflet,
+    .contenedor-vista.sidebar-colapsado-fallback .mapa-contenedor,
+    .contenedor-vista-direcciones.sidebar-colapsado-fallback #mapa-direcciones-leaflet {
         left: 0;
         width: 100%;
     }
 
-    .contenedor-vista-direcciones:has(.barra-lateral:not(.barra-lateral--colapsado)) .buscador-flotante {
+    .contenedor-vista-direcciones:has(.barra-lateral:not(.barra-lateral--colapsado)) .buscador-flotante,
+    .contenedor-vista-direcciones.sidebar-colapsado-fallback .buscador-flotante {
         left: 50%;
     }
 

@@ -47,6 +47,7 @@ export class Direcciones {
         this.configCruces = null;
 
         this.candidatoActual = null;
+        this.ajustandoMapaTrasSidebar = false;
     }
 
     async inicializar() {
@@ -141,7 +142,10 @@ export class Direcciones {
                 this.sidebarComponent = new InterfazSidebar(
                     'sidebar-herramientas',
                     'btn-toggle-sidebar-herramientas',
-                    this.orquestador
+                    this.orquestador,
+                    () => {
+                        this.ajustarMapaTrasSidebar();
+                    }
                 );
 
                 this.sidebarComponent.inicializar(
@@ -163,12 +167,7 @@ export class Direcciones {
                 if (btnToggle) {
                     btnToggle.addEventListener('click', () => {
                         contenedor.classList.toggle('sidebar-oculto');
-
-                        setTimeout(() => {
-                            if (this.gestorMapa && this.gestorMapa.mapa) {
-                                this.gestorMapa.mapa.invalidateSize();
-                            }
-                        }, 400);
+                        this.ajustarMapaTrasSidebar();
                     });
                 }
 
@@ -189,7 +188,12 @@ export class Direcciones {
                 this.mapillaryComponent = new InterfazMapillary(
                     'contenedor-mapillary',
                     this.orquestador,
-                    configMapillary
+                    configMapillary,
+                    () => {
+                        if (this.gestorMapa && this.gestorMapa.mapa) {
+                            this.gestorMapa.mapa.invalidateSize();
+                        }
+                    }
                 );
 
                 this.buscadorComponent = new BuscadorDirecciones(
@@ -215,6 +219,31 @@ export class Direcciones {
             this.elementoRaiz.innerHTML = `<div style="padding:20px; color:var(--color-texto);">Error al cargar componentes cartográficos.</div>`;
             return this.elementoRaiz;
         }
+    }
+
+    ajustarMapaTrasSidebar() {
+        if (!this.gestorMapa?.mapa || this.ajustandoMapaTrasSidebar) {
+            return;
+        }
+
+        this.ajustandoMapaTrasSidebar = true;
+        const mapa = this.gestorMapa.mapa;
+        const tiempoInicio = performance.now();
+        const duracionTransicion = 400;
+
+        const actualizarMapaContinuo = (tiempoActual) => {
+            const tiempoTranscurrido = tiempoActual - tiempoInicio;
+            mapa.invalidateSize({ animate: false });
+
+            if (tiempoTranscurrido < duracionTransicion) {
+                requestAnimationFrame(actualizarMapaContinuo);
+            } else {
+                mapa.invalidateSize({ animate: true });
+                this.ajustandoMapaTrasSidebar = false;
+            }
+        };
+
+        requestAnimationFrame(actualizarMapaContinuo);
     }
 
     /**

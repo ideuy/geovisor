@@ -62,16 +62,28 @@ export class BusquedaInversa {
                 ?.querySelector('.direcciones-btn-trazar-cruce');
             if (btn) {
                 btn.onclick = () => {
-                    this.trazarRecorrido(
-                        L.latLng(
-                            parseFloat(btn.dataset.lat),
-                            parseFloat(btn.dataset.lng)
-                        )
+                    const lat = parseFloat(
+                        String(btn.dataset.lat).replace(',', '.')
                     );
+                    const lng = parseFloat(
+                        String(btn.dataset.lng).replace(',', '.')
+                    );
+
+                    if (!isNaN(lat) && !isNaN(lng)) {
+                        this.trazarRecorrido(L.latLng(lat, lng));
+                    } else {
+                        this.orquestador.error(
+                            'Búsqueda Inversa',
+                            `Coordenadas inválidas en botón: lat=${btn.dataset.lat}, lng=${btn.dataset.lng}`
+                        );
+                    }
                 };
             }
         });
-        this.orquestador.info('Búsqueda Inversa', 'Herramienta creada con éxito.');
+        this.orquestador.info(
+            'Búsqueda Inversa',
+            'Herramienta creada con éxito.'
+        );
     }
 
     activar() {
@@ -105,10 +117,10 @@ export class BusquedaInversa {
             const response = await fetch(url);
 
             if (!response.ok) {
-                  this.orquestador.throwError(
+                this.orquestador.throwError(
                     'Búsqueda Inversa',
                     `Error en el servicio de búsqueda inversa: ${response.status} ${response.statusText}`
-                );                
+                );
             }
 
             const data = await response.json();
@@ -206,14 +218,16 @@ export class BusquedaInversa {
                         ${
                             puntoClick.distanceTo(pos) > 500
                                 ? `
-                            <button class="direcciones-btn-trazar-cruce" data-lat="${itemBase.lat}" data-lng="${itemBase.lng}">Trazar Recorrido</button>
+                            <button class="direcciones-btn-trazar-cruce" data-lat="${pos.lat}" data-lng="${pos.lng}">Trazar Recorrido</button>
                         `
                                 : ''
                         }
                     </div>`;
             }
 
-            const marcador = L.marker(pos, { icon: iconoUsar }).bindPopup(cuerpoPopup);
+            const marcador = L.marker(pos, { icon: iconoUsar }).bindPopup(
+                cuerpoPopup
+            );
 
             marcador.on('click', () => {
                 this.parent.candidatoActual = { punto: pos, datos: itemBase };
@@ -241,14 +255,6 @@ export class BusquedaInversa {
         }
     }
 
-    limpiarTodo() {
-        if (this.layerGroup) this.layerGroup.clearLayers();
-        if (this.routingControl) {
-            this.mapa.removeControl(this.routingControl);
-            this.routingControl = null;
-        }
-    }
-
     trazarRecorrido(destino) {
         if (!this.puntoClick) return;
         if (this.routingControl) this.mapa.removeControl(this.routingControl);
@@ -259,5 +265,13 @@ export class BusquedaInversa {
             addWaypoints: false,
             show: false,
         }).addTo(this.mapa);
+    }
+
+    limpiarTodo() {
+        if (this.layerGroup) this.layerGroup.clearLayers();
+        if (this.routingControl) {
+            this.mapa.removeControl(this.routingControl);
+            this.routingControl = null;
+        }
     }
 }

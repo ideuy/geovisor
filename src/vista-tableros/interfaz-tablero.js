@@ -1,33 +1,36 @@
-/**
- * interfaz-tablero.js
- * Estructura de maquetación HTML pura para la Vista Tablero.
- */
 export function obtenerTemplateTablero(config) {
+    const esCoropleta = config.tipoCapaCartografica === 'poligonos_coropletas';
+
+    const selectorVistasHtml = esCoropleta
+        ? `<div class="tablero__selector-vistas">
+            <span class="tablero__selector-titulo">Vista: <strong>Coropletas (Departamentos)</strong></span>
+           </div>`
+        : `<div class="tablero__selector-vistas">
+            <span class="tablero__selector-titulo">Ver:</span>
+            <input type="radio" id="geo-puntos" class="tablero__radio-input" name="tipo-geo" value="puntos" ${config.visualizacion === 'puntos' ? 'checked' : ''}>
+            <label for="geo-puntos" class="tablero__radio-label">Puntos</label>
+            <input type="radio" id="geo-agrupados" class="tablero__radio-input" name="tipo-geo" value="puntosAgrupados" ${config.visualizacion === 'puntosAgrupados' ? 'checked' : ''}>
+            <label for="geo-agrupados" class="tablero__radio-label">Agrupados</label>
+            <input type="radio" id="geo-calor" class="tablero__radio-input" name="tipo-geo" value="mapaCalor" ${config.visualizacion === 'mapaCalor' ? 'checked' : ''}>
+            <label for="geo-calor" class="tablero__radio-label">Mapa Calor</label>
+        </div>`;
+
     return `
-        <div class="vista-tablero-contenedor">
+        <div class="vista-tablero-contenedor" style="position: relative;">
             
+            <div id="tablero-loader" class="tablero__loader-overlay">
+                <div class="tablero__spinner"></div>
+                <p class="tablero__loader-texto">Estamos preparando el tablero, aguarde...</p>
+            </div>
+
             <section class="tablero__mapa">
                 <div id="mapa-titulo" class="tablero__mapa-titulo"></div>
                 <div id="mapa-leaflet" class="tablero__mapa-canvas"></div>
-                
-                <div class="tablero__selector-vistas">
-                    <span class="tablero__selector-titulo">Ver:</span>
-                    
-                    <input type="radio" id="geo-puntos" class="tablero__radio-input" name="tipo-geo" value="puntos" ${config.visualizacion === 'puntos' ? 'checked' : ''}>
-                    <label for="geo-puntos" class="tablero__radio-label">Puntos</label>
-                    
-                    <input type="radio" id="geo-agrupados" class="tablero__radio-input" name="tipo-geo" value="puntosAgrupados" ${config.visualizacion === 'puntosAgrupados' ? 'checked' : ''}>
-                    <label for="geo-agrupados" class="tablero__radio-label">Agrupados</label>
-                    
-                    <input type="radio" id="geo-calor" class="tablero__radio-input" name="tipo-geo" value="mapaCalor" ${config.visualizacion === 'mapaCalor' ? 'checked' : ''}>
-                    <label for="geo-calor" class="tablero__radio-label">Mapa Calor</label>
-                </div>
+                ${selectorVistasHtml}
             </section>
 
             <section class="tablero__analitica">
-                
                 <div class="tablero__panel-controles">
-                    
                     <div class="tablero__contadores-grupo">
                         <div class="tarjeta tarjeta--contador">
                             <span class="tablero__contador-etiqueta">Total Dimensiones</span>
@@ -46,7 +49,6 @@ export function obtenerTemplateTablero(config) {
                                 <select id="cmb-tableros" class="tablero__select"></select>
                             </div>
                         </div>
-                        
                         <div class="tablero__formulario-columna">
                             <div class="tablero__control-grupo">
                                 <label for="cmb-dimensiones" class="tablero__control-label">Agrupar por:</label>
@@ -79,7 +81,6 @@ export function obtenerTemplateTablero(config) {
                         </table>
                     </div>
                 </div>
-                
             </section>
         </div>
     `;

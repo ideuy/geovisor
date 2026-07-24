@@ -113,12 +113,16 @@ export class Cartografia {
             },
         ];
 
-        const grupoSegmentado = InterfazCartografia.crearPanelHerramientasExclusivas(
-            this.herramientasExclusivas
-        );
+        const grupoSegmentado =
+            InterfazCartografia.crearPanelHerramientasExclusivas(
+                this.herramientasExclusivas
+            );
         contenedorPanel.appendChild(grupoSegmentado);
 
-        this._vincularEventosHerramientas(contenedorPanel, this.herramientasExclusivas);
+        this._vincularEventosHerramientas(
+            contenedorPanel,
+            this.herramientasExclusivas
+        );
     }
 
     /**
@@ -188,11 +192,13 @@ export class Cartografia {
             const [resMapas, resCapas, resApp] = await Promise.all([
                 fetch('./config/mapas-base.json'),
                 fetch('./config/capas-operativas.json'),
-                fetch('./config/aplicacion.json')
+                fetch('./config/aplicacion.json'),
             ]);
 
-            if (!resMapas.ok) throw new Error('No se pudo obtener mapas-base.json');
-            if (!resCapas.ok) throw new Error('No se pudo obtener capas-operativas.json');
+            if (!resMapas.ok)
+                throw new Error('No se pudo obtener mapas-base.json');
+            if (!resCapas.ok)
+                throw new Error('No se pudo obtener capas-operativas.json');
 
             const datosMapas = await resMapas.json();
             const datosCapas = await resCapas.json();
@@ -205,15 +211,14 @@ export class Cartografia {
             this.mapasBaseConfig = datosMapas.mapasBase.proveedores;
 
             this.instanciaMapa = L.map('mapa-base-leaflet', {
-                zoomControl: false
-            }).setView(
-                configMapa.centro,
-                configMapa.zoomInicial
-            );
+                zoomControl: false,
+            }).setView(configMapa.centro, configMapa.zoomInicial);
 
-            L.control.zoom({
-                position: 'topright'
-            }).addTo(this.instanciaMapa);
+            L.control
+                .zoom({
+                    position: 'topright',
+                })
+                .addTo(this.instanciaMapa);
 
             this.orquestador.debug(
                 'Cartografía',
@@ -257,11 +262,20 @@ export class Cartografia {
                     });
                 panelInterruptores.appendChild(nodoFilaCapa);
 
-                const inputCheck = nodoFilaCapa.querySelector('.interruptor__input');
-                const contenedorOpacidad = nodoFilaCapa.querySelector('.capa-opacidad-contenedor');
-                const inputOpacidad = nodoFilaCapa.querySelector('.interruptor__opacidad');
-                const textoOpacidad = nodoFilaCapa.querySelector('.opacidad-valor');
-                const inputCorte = nodoFilaCapa.querySelector('.interruptor__corte');
+                const inputCheck = nodoFilaCapa.querySelector(
+                    '.interruptor__input'
+                );
+                const contenedorOpacidad = nodoFilaCapa.querySelector(
+                    '.capa-opacidad-contenedor'
+                );
+                const inputOpacidad = nodoFilaCapa.querySelector(
+                    '.interruptor__opacidad'
+                );
+                const textoOpacidad =
+                    nodoFilaCapa.querySelector('.opacidad-valor');
+                const inputCorte = nodoFilaCapa.querySelector(
+                    '.interruptor__corte'
+                );
                 const textoCorte = nodoFilaCapa.querySelector('.corte-valor');
 
                 inputCheck.addEventListener('change', (e) => {
@@ -271,13 +285,16 @@ export class Cartografia {
                         'Cartografía',
                         `Switch clickeado para capa: ${capa.id}. Estado: ${estaActiva}`
                     );
-                    
-                    contenedorOpacidad.style.display = estaActiva ? 'block' : 'none';
-                    
+
+                    contenedorOpacidad.style.display = estaActiva
+                        ? 'block'
+                        : 'none';
+
                     if (estaActiva) {
                         const capaWms = this.capasOperativasCargadas[capa.id];
                         if (capaWms) {
-                            const opacidadActual = capaWms.options.opacity * 100;
+                            const opacidadActual =
+                                capaWms.options.opacity * 100;
                             inputOpacidad.value = opacidadActual;
                             textoOpacidad.textContent = `${Math.round(opacidadActual)}%`;
                         }
@@ -286,7 +303,7 @@ export class Cartografia {
                 });
 
                 inputOpacidad.addEventListener('input', (e) => {
-                    const valorOpacidad = e.target.value; 
+                    const valorOpacidad = e.target.value;
                     textoOpacidad.textContent = `${valorOpacidad}%`;
                     const capaWms = this.capasOperativasCargadas[capa.id];
                     if (capaWms && typeof capaWms.setOpacity === 'function') {
@@ -297,7 +314,9 @@ export class Cartografia {
                 inputCorte.addEventListener('input', (e) => {
                     const valorCorte = parseFloat(e.target.value);
                     const filaPadre = e.target.closest('.capa-operativa-item');
-                    const textoCorte = filaPadre ? filaPadre.querySelector('.corte-valor') : null;
+                    const textoCorte = filaPadre
+                        ? filaPadre.querySelector('.corte-valor')
+                        : null;
                     if (textoCorte) textoCorte.textContent = `${valorCorte}%`;
 
                     const capaWms = this.capasOperativasCargadas[capa.id];
@@ -306,19 +325,19 @@ export class Cartografia {
                     }
                 });
                 if (capa.visibleCartografia) {
-
                     this.orquestador.debug(
                         'Cartografía',
                         `Capa ${capa.id} configurada activa por defecto.`
                     );
-                   
+
                     this.conmutarCapaWMS(capa, true);
                 }
             });
         } catch (error) {
             this.orquestador.error(
-                'Cartografía', 
-                'Error crítico al estructurar el entorno parametrizado: ', error
+                'Cartografía',
+                'Error crítico al estructurar el entorno parametrizado: ',
+                error
             );
         }
     }
@@ -365,12 +384,22 @@ export class Cartografia {
         }
 
         if (estaActiva) {
-            const nodoFila = this.elementoRaiz.querySelector(`[data-capa-id="${configCapa.id}"]`);
-            const inputOpacidad = nodoFila ? nodoFila.querySelector('.interruptor__opacidad') : null;
-            const opacidadInicial = inputOpacidad ? (parseFloat(inputOpacidad.value) / 100) : 1.0;
-            
-            const inputCorte = nodoFila ? nodoFila.querySelector('.interruptor__corte') : null;
-            const corteInicial = inputCorte ? parseFloat(inputCorte.value) : 100;
+            const nodoFila = this.elementoRaiz.querySelector(
+                `[data-capa-id="${configCapa.id}"]`
+            );
+            const inputOpacidad = nodoFila
+                ? nodoFila.querySelector('.interruptor__opacidad')
+                : null;
+            const opacidadInicial = inputOpacidad
+                ? parseFloat(inputOpacidad.value) / 100
+                : 1.0;
+
+            const inputCorte = nodoFila
+                ? nodoFila.querySelector('.interruptor__corte')
+                : null;
+            const corteInicial = inputCorte
+                ? parseFloat(inputCorte.value)
+                : 100;
 
             this.orquestador.debug(
                 'Cartografía',
@@ -387,29 +416,38 @@ export class Cartografia {
                 nombreCapa: configCapa.nombre || 'Capa Operativa',
                 opacity: opacidadInicial,
                 maxZoom: 22,
-                maxNativeZoom: 18
+                maxNativeZoom: 18,
             });
 
             this.capasOperativasCargadas[configCapa.id] = capaWms;
 
-            const inputCorteInicial = nodoFila ? nodoFila.querySelector('.interruptor__corte') : null;
+            const inputCorteInicial = nodoFila
+                ? nodoFila.querySelector('.interruptor__corte')
+                : null;
             const sincronizarCorte = () => {
-                const valorActual = inputCorteInicial ? parseFloat(inputCorteInicial.value) : 100;
+                const valorActual = inputCorteInicial
+                    ? parseFloat(inputCorteInicial.value)
+                    : 100;
                 this.aplicarCortePersiana(capaWms, valorActual);
             };
 
             capaWms.on('load tileload', sincronizarCorte);
             this.instanciaMapa.on('move zoom zoomend', sincronizarCorte);
 
-            this.orquestador.debug('Cartografía', 'Ejecutando capaWms.addTo(mapa)');
+            this.orquestador.debug(
+                'Cartografía',
+                'Ejecutando capaWms.addTo(mapa)'
+            );
             capaWms.addTo(this.instanciaMapa);
-
         } else {
             const capaExistente = this.capasOperativasCargadas[configCapa.id];
             if (capaExistente) {
                 this.instanciaMapa.removeLayer(capaExistente);
                 delete this.capasOperativasCargadas[configCapa.id];
-                this.orquestador.debug('Cartografía', `Capa ${configCapa.id} removida correctamente.`);
+                this.orquestador.debug(
+                    'Cartografía',
+                    `Capa ${configCapa.id} removida correctamente.`
+                );
             }
         }
     }
@@ -430,7 +468,9 @@ export class Cartografia {
         const tamanoMapa = this.instanciaMapa.getSize();
         const xCorteEnPantalla = tamanoMapa.x * (valorCorte / 100);
 
-        const puntoOrigen = this.instanciaMapa.containerPointToLayerPoint([0, 0]);
+        const puntoOrigen = this.instanciaMapa.containerPointToLayerPoint([
+            0, 0,
+        ]);
         const puntoCorte = this.instanciaMapa.containerPointToLayerPoint([
             xCorteEnPantalla,
             tamanoMapa.y,
@@ -442,6 +482,45 @@ export class Cartografia {
             ${puntoCorte.x}px ${puntoCorte.y}px,
             ${puntoOrigen.x}px ${puntoCorte.y}px
         )`;
+    }
+
+    /**
+     * Controles CSS coordinados de apertura y cierre del panel.
+     */
+    conmutarSidebar(sidebar, boton) {
+        this.sidebarColapsado = !this.sidebarColapsado;
+        this.orquestador.debug(
+            'Cartografía',
+            `Modificando contenedor del sidebar. Colapsado = ${this.sidebarColapsado}`
+        );
+
+        sidebar.classList.toggle(
+            'barra-lateral--colapsado',
+            this.sidebarColapsado
+        );
+        boton.classList.toggle(
+            'barra-lateral__solapa--colapsada',
+            this.sidebarColapsado
+        );
+        boton.innerText = this.sidebarColapsado ? '▶' : '◀';
+
+        const tiempoInicio = performance.now();
+        const duracionTransicion = 400;
+
+        const actualizarMapaContinuo = (tiempoActual) => {
+            const tiempoTranscurrido = tiempoActual - tiempoInicio;
+
+            if (this.instanciaMapa) {
+                this.instanciaMapa.invalidateSize({ animate: false });
+            }
+
+            if (tiempoTranscurrido < duracionTransicion) {
+                requestAnimationFrame(actualizarMapaContinuo);
+            } else if (this.instanciaMapa) {
+                this.instanciaMapa.invalidateSize({ animate: true });
+            }
+        };
+        requestAnimationFrame(actualizarMapaContinuo);
     }
 
     /**
@@ -469,40 +548,7 @@ export class Cartografia {
             this.moduloPerfilElevacion.desactivar();
         }
     }
-
-    /**
-     * Controles CSS coordinados de apertura y cierre del panel.
-     */
-    conmutarSidebar(sidebar, boton) {
-        this.sidebarColapsado = !this.sidebarColapsado;
-        this.orquestador.debug(
-            'Cartografía',
-            `Modificando contenedor del sidebar. Colapsado = ${this.sidebarColapsado}`
-        );
-
-        sidebar.classList.toggle('barra-lateral--colapsado', this.sidebarColapsado);
-        boton.classList.toggle('barra-lateral__solapa--colapsada', this.sidebarColapsado);
-        boton.innerText = this.sidebarColapsado ? '▶' : '◀';
-
-        const tiempoInicio = performance.now();
-        const duracionTransicion = 400; 
-
-        const actualizarMapaContinuo = (tiempoActual) => {
-            const tiempoTranscurrido = tiempoActual - tiempoInicio;
-
-            if (this.instanciaMapa) {
-                this.instanciaMapa.invalidateSize({ animate: false });
-            }
-
-            if (tiempoTranscurrido < duracionTransicion) {
-                requestAnimationFrame(actualizarMapaContinuo);
-            } else if (this.instanciaMapa) {
-                this.instanciaMapa.invalidateSize({ animate: true });
-            }
-        };
-        requestAnimationFrame(actualizarMapaContinuo);
-    }
-
+    
     /**
      * Ciclo de vida: Remueve eventos, listeners y limpia el mapa de la memoria global
      */
