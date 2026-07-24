@@ -22,10 +22,7 @@ export class MapillaryHerramienta {
     activar() {
         this.activo = true;
         this.limpiarTodo();
-        this.orquestador.info(
-            'Mapillary',
-            'Modo entorno urbano ACTIVADO.'
-        );
+        this.orquestador.info('Mapillary', 'Modo entorno urbano ACTIVADO.');
 
         this.mapa.on('popupopen', this.manejarPopupOpen, this);
         this.mapa.on('popupclose', this.manejarPopupClose, this);
@@ -56,14 +53,24 @@ export class MapillaryHerramienta {
         const visor = document.getElementById('contenedor-mapillary');
         if (visor) visor.style.display = 'block';
 
-        const datosCandidato = this.parent.candidatoActual?.datos || { lat, lng };
+        const datosCandidato = this.parent.candidatoActual?.datos || {
+            lat,
+            lng,
+        };
 
         if (this.parent.mapillaryComponent) {
-            if (typeof this.parent.mapillaryComponent.renderizar === 'function') {
+            if (
+                typeof this.parent.mapillaryComponent.renderizar === 'function'
+            ) {
                 this.parent.mapillaryComponent.renderizar(datosCandidato);
-            } else if (typeof this.parent.mapillaryComponent.actualizarUbicacion === 'function') {
+            } else if (
+                typeof this.parent.mapillaryComponent.actualizarUbicacion ===
+                'function'
+            ) {
                 this.parent.mapillaryComponent.actualizarUbicacion(lat, lng);
-            } else if (typeof this.parent.mapillaryComponent.activar === 'function') {
+            } else if (
+                typeof this.parent.mapillaryComponent.activar === 'function'
+            ) {
                 this.parent.mapillaryComponent.activar();
             }
         }
@@ -72,11 +79,24 @@ export class MapillaryHerramienta {
     ocultarEntorno() {
         const visor = document.getElementById('contenedor-mapillary');
         if (visor) visor.style.display = 'none';
+
+        if (
+            this.parent.mapillaryComponent &&
+            typeof this.parent.mapillaryComponent.destruirVisor === 'function'
+        ) {
+            this.parent.mapillaryComponent.destruirVisor();
+        }
     }
 
     desactivar() {
         this.activo = false;
         this.limpiarTodo();
+        if (
+            this.parent.mapillaryComponent &&
+            typeof this.parent.mapillaryComponent.desactivar === 'function'
+        ) {
+            this.parent.mapillaryComponent.desactivar();
+        }
     }
 
     limpiarTodo() {

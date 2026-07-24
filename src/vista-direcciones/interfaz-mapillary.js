@@ -111,8 +111,20 @@ export class InterfazMapillary {
         this.contenedor.classList.add('direcciones-mapillary-flotante--activo');
         this.posicionarTirador();
 
-        const lngFija = parseFloat(punto.lng).toFixed(6);
-        const latFija = parseFloat(punto.lat).toFixed(6);
+        const latVal = punto.lat ?? punto.y ?? punto.geometry?.coordinates[1];
+        const lngVal = punto.lng ?? punto.x ?? punto.geometry?.coordinates[0];
+
+        if (latVal === undefined || lngVal === undefined) {
+            this.orquestador.error(
+                'Mapillary',
+                'Coordenadas no válidas recibidas en el renderizador.',
+                punto
+            );
+            return;
+        }
+
+        const lngFija = parseFloat(lngVal).toFixed(6);
+        const latFija = parseFloat(latVal).toFixed(6);
 
         // 2. Consulta a Mapillary Graph API (lat, lng, radius)
         const urlBusqueda = `${this.urlBase}/images?access_token=${this.accessToken}&fields=id,captured_at&lat=${latFija}&lng=${lngFija}&radius=${this.radio}&limit=${this.limite}`;
@@ -139,10 +151,11 @@ export class InterfazMapillary {
 
                     this.viewer = new MapillaryLib.Viewer({
                         accessToken: this.accessToken,
-                        container: this.cuerpoContenido, // Siempre renderiza dentro del div aislado
+                        container: this.cuerpoContenido,
                         imageId: idImagenReciente,
                         component: {
-                            cover: false, // Inicia la imagen directamente sin pantalla de portada
+                            cover: false,
+                            spatial: false,
                         },
                     });
                 } else {
